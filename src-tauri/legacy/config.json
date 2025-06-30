@@ -1,0 +1,9 @@
+{
+  "mode": "legacy",
+  "nerual": false,
+  "tasks": {
+    "cws": "cws_model.bin",
+    "pos": "pos_model.bin",
+    "ner": "ner_model.bin"
+  }
+}
