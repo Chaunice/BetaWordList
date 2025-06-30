@@ -1,10 +1,10 @@
-# BetaWordlist
+# BetaWordList
 
-**BetaWordlist** is a modern, cross-platform vocabulary analysis tool built with [Tauri](https://tauri.app/), [Svelte](https://svelte.dev/), and Rust. Designed for linguists, researchers, and anyone needing to build word lists from large-scale Chinese text corpora efficiently and interactively.
+**BetaWordList** is a modern, cross-platform vocabulary analysis tool built with [Tauri](https://tauri.app/), [Svelte](https://svelte.dev/), and Rust. Designed for linguists, researchers, and anyone needing to build word lists from large-scale Chinese text corpora efficiently and interactively.
 
 ## 🚀 Overview
 
-BetaWordlist enables you to:
+BetaWordList enables you to:
 
 - **Load pre-trained NLP models** for Chinese word segmentation and POS tagging
 - **Batch analyze** multiple text files with real-time progress feedback
