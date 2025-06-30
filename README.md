@@ -2,8 +2,6 @@
 
 **BetaWordlist** is a modern, cross-platform vocabulary analysis tool built with [Tauri](https://tauri.app/), [Svelte](https://svelte.dev/), and Rust. Designed for linguists, researchers, and anyone needing to build word lists from large-scale Chinese text corpora efficiently and interactively.
 
----
-
 ## 🚀 Overview
 
 BetaWordlist enables you to:
@@ -12,8 +10,6 @@ BetaWordlist enables you to:
 - **Batch analyze** multiple text files with real-time progress feedback
 - **Explore results** in a powerful, interactive table with advanced filtering and sorting
 - **Export filtered results** to CSV for further analysis
-
----
 
 ## ✨ Features
 
@@ -41,15 +37,11 @@ BetaWordlist enables you to:
   - One-click reset for all filters
   - Fully responsive for desktop and laptop screens
 
----
-
 ## 🛠️ Tech Stack
 
 - **Frontend:** Svelte, TailwindCSS, Lucide Icons
 - **Backend:** Rust, Tauri, LTP NLP library
 - **File System:** Secure, permission-based access via Tauri plugins
-
----
 
 ## 📦 Getting Started
 
@@ -71,8 +63,6 @@ BetaWordlist enables you to:
    bun run tauri build
    ```
 
----
-
 ## 📋 TODO
 
 - [ ] Add English UI/localization support
@@ -83,13 +73,9 @@ BetaWordlist enables you to:
 - [ ] Performance optimization for extremely large corpora
 - [ ] Dark mode toggle
 
----
-
 ## 🤝 Contributing
 
 Pull requests, issues, and suggestions are welcome! Please open an issue or PR if you have ideas or bug reports.
-
----
 
 ## 📄 License
 
