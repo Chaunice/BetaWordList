@@ -62,12 +62,12 @@
         filePaths.set([selected]);
       }
     } catch (e) {
-      showToast(`文件选择失败: ${e}`, 'error');
+      showToast(`File selection failed: ${e}`, 'error');
     }
   }
 
   async function loadModel() {
-    modelStatus.set("正在加载模型...");
+    modelStatus.set("Loading models...");
     try {
       await invoke("load_models", {
         cwsPath: cwsModel,
@@ -75,11 +75,11 @@
       });
       modelLoaded.set(true);
       modelStatus.set("");
-      showToast('模型加载成功!', 'success');
+      showToast('Model loaded!', 'success');
     } catch (e) {
       modelLoaded.set(false);
       modelStatus.set("");
-      showToast(`模型加载失败: ${e}`, 'error');
+      showToast(`Fail to load models: ${e}`, 'error');
     }
   }
 
@@ -308,7 +308,7 @@
   async function downloadCSV() {
     try {
       // 生成CSV内容
-      const headers = ['词汇', '词性', ...$metricColumns];
+      const headers = ['Word', 'POS', ...$metricColumns];
       const csvRows = [headers.join(',')];
       
       // 使用筛选后的完整数据，不仅仅是当前页
@@ -342,20 +342,20 @@
         // 写入文件
         const { writeTextFile } = await import("@tauri-apps/plugin-fs");
         await writeTextFile(filePath, csvContent);
-        showToast(`文件已保存: ${filePath}`, 'success');
+        showToast(`Results saved to: ${filePath}`, 'success');
       }
     } catch (error) {
-      showToast(`下载失败: ${error}`, 'error');
+      showToast(`Fail to save: ${error}`, 'error');
     }
   }
 
   async function analyze() {
     if (!$modelLoaded) {
-      showToast('请先加载NLP模型', 'warning');
+      showToast('Please load the NLP model first', 'warning');
       return;
     }
     if ($filePaths.length === 0) {
-      showToast('请先选择要分析的文本文件', 'warning');
+      showToast('Please select files to analyze first', 'warning');
       return;
     }
     analyzing.set(true);
@@ -368,12 +368,12 @@
       });
       result.set(analysisResult);
       if (analysisResult.length === 0) {
-        showToast('分析完成，但未提取到任何结果。', 'warning');
+        showToast('Analysis complete, but no results were extracted.', 'warning');
       } else {
-        showToast('分析完成!', 'success');
+        showToast('Analysis complete!', 'success');
       }
     } catch (e) {
-      showToast(`分析出错: ${e}`, 'error');
+      showToast(`Analysis failed: ${e}`, 'error');
     }
     analyzing.set(false);
     if (unlisten) {
@@ -418,84 +418,244 @@
 {/if}
 
 <div class="space-y-8">
-  <!-- 页面标题 -->
-  <div class="space-y-2">
-    <h1 class="text-3xl font-bold tracking-tight">词汇分析工具</h1>
-    <p class="text-muted-foreground">
-      使用先进的NLP技术分析文本文件中的词汇分布和特征
-    </p>
+  <!-- 页面标题 - 居中设计 -->
+  <div class="text-center space-y-4 py-8">
+    <div class="space-y-3">
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        Word List Generator
+      </h1>
+      <p class="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        Making word lists by analyzing word distribution in text files using various dispersion metrics.
+      </p>
+    </div>
+    <div class="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+        <span>Machine Learning Powered</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+        <span>Real-time Processing</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+        <span>Export Ready</span>
+      </div>
+    </div>
   </div>
 
-  <!-- 操作卡片 -->
-  <Card className="p-6">
-    <div class="space-y-6">
-      <h2 class="text-xl font-semibold">操作控制</h2>
+  <!-- 操作卡片 - 现代化设计 -->
+  <Card className="p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-2 shadow-lg">
+    <div class="space-y-8">
+      <div class="text-center">
+        <h2 class="text-2xl font-semibold mb-2">Get Started</h2>
+        <p class="text-muted-foreground">Follow these three simple steps to analyze your text files</p>
+      </div>
       
-      <div class="flex flex-wrap gap-3">
-        <Button on:click={selectFiles} disabled={$analyzing}>
-          <FileText class="h-4 w-4 mr-2" />
-          选择文件
-        </Button>
-        
-        <Button 
-          variant="secondary" 
-          on:click={loadModel} 
-          disabled={$analyzing || $modelLoaded}
-        >
-          {#if $modelStatus}
-            <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-            {$modelStatus}
-          {:else}
-            <Settings class="h-4 w-4 mr-2" />
-            加载模型
+      <!-- 步骤卡片布局 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 步骤 1: 选择文件 -->
+        <div class={cn(
+          "relative p-6 rounded-xl border-2 transition-all duration-300 group",
+          $filePaths.length > 0 
+            ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20 shadow-md" 
+            : "border-gray-200 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-800/50 hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md"
+        )}>
+          <div class="flex flex-col items-center text-center space-y-4">
+            <div class={cn(
+              "w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 group-hover:scale-105",
+              $filePaths.length > 0 ? "bg-green-500 text-white shadow-lg" : "bg-gray-200 text-gray-600"
+            )}>
+              {#if $filePaths.length > 0}
+                <CheckCircle class="h-6 w-6" />
+              {:else}
+                1
+              {/if}
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-semibold text-lg">Select Files</h3>
+              <p class="text-sm text-muted-foreground">Choose your text files for analysis</p>
+            </div>
+            <Button 
+              on:click={selectFiles} 
+              disabled={$analyzing}
+              class={cn(
+                "w-full transition-all duration-200 font-medium",
+                $filePaths.length > 0 && "bg-green-600 hover:bg-green-700 shadow-md"
+              )}
+              variant={$filePaths.length > 0 ? "default" : "outline"}
+            >
+              <FileText class="h-4 w-4 mr-2" />
+              {$filePaths.length > 0 ? `${$filePaths.length} File${$filePaths.length > 1 ? 's' : ''} Selected` : 'Select Text Files'}
+            </Button>
+          </div>
+          {#if $filePaths.length > 0}
+            <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+              <CheckCircle class="h-4 w-4 text-white" />
+            </div>
           {/if}
-        </Button>
-        
-        <Button 
-          on:click={analyze} 
-          disabled={$analyzing || $filePaths.length === 0 || !$modelLoaded}
-        >
-          {#if $analyzing}
-            <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-            正在分析...
-          {:else}
-            <Play class="h-4 w-4 mr-2" />
-            开始分析
+        </div>
+
+        <!-- 步骤 2: 加载模型 -->
+        <div class={cn(
+          "relative p-6 rounded-xl border-2 transition-all duration-300 group",
+          $modelLoaded 
+            ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20 shadow-md" 
+            : "border-gray-200 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-800/50 hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md"
+        )}>
+          <div class="flex flex-col items-center text-center space-y-4">
+            <div class={cn(
+              "w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 group-hover:scale-105",
+              $modelLoaded ? "bg-green-500 text-white shadow-lg" : $modelStatus ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"
+            )}>
+              {#if $modelLoaded}
+                <CheckCircle class="h-6 w-6" />
+              {:else if $modelStatus}
+                <Loader2 class="h-6 w-6 animate-spin" />
+              {:else}
+                2
+              {/if}
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-semibold text-lg">Load Models</h3>
+              <p class="text-sm text-muted-foreground">Initialize NLP models for processing</p>
+            </div>
+            <Button 
+              on:click={loadModel} 
+              disabled={$analyzing || $modelLoaded}
+              class={cn(
+                "w-full transition-all duration-200 font-medium",
+                $modelLoaded && "bg-green-600 hover:bg-green-700 shadow-md"
+              )}
+              variant={$modelLoaded ? "default" : "outline"}
+            >
+              {#if $modelStatus}
+                <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+                {$modelStatus}
+              {:else}
+                <Settings class="h-4 w-4 mr-2" />
+                {$modelLoaded ? 'Models Ready ✓' : 'Load NLP Models'}
+              {/if}
+            </Button>
+          </div>
+          {#if $modelLoaded}
+            <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+              <CheckCircle class="h-4 w-4 text-white" />
+            </div>
           {/if}
-        </Button>
+        </div>
+
+        <!-- 步骤 3: 开始分析 -->
+        <div class={cn(
+          "relative p-6 rounded-xl border-2 transition-all duration-300 group md:col-span-2 lg:col-span-1",
+          $result.length > 0 
+            ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20 shadow-md" 
+            : "border-gray-200 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-800/50 hover:border-purple-300 hover:bg-purple-50/30 hover:shadow-md"
+        )}>
+          <div class="flex flex-col items-center text-center space-y-4">
+            <div class={cn(
+              "w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 group-hover:scale-105",
+              $result.length > 0 ? "bg-green-500 text-white shadow-lg" : $analyzing ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"
+            )}>
+              {#if $result.length > 0}
+                <CheckCircle class="h-6 w-6" />
+              {:else if $analyzing}
+                <Loader2 class="h-6 w-6 animate-spin" />
+              {:else}
+                3
+              {/if}
+            </div>
+            <div class="space-y-2">
+              <h3 class="font-semibold text-lg">Start Analysis</h3>
+              <p class="text-sm text-muted-foreground">Process your files and extract insights</p>
+            </div>
+            <Button 
+              on:click={analyze} 
+              disabled={$analyzing || $filePaths.length === 0 || !$modelLoaded}
+              class={cn(
+                "w-full transition-all duration-200 font-medium",
+                !($analyzing || $filePaths.length === 0 || !$modelLoaded) && !$result.length && "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md",
+                $result.length > 0 && "bg-green-600 hover:bg-green-700 shadow-md"
+              )}
+              variant={$result.length > 0 ? "default" : ($analyzing || $filePaths.length === 0 || !$modelLoaded) ? "outline" : "default"}
+            >
+              {#if $analyzing}
+                <Loader2 class="h-4 w-4 mr-2 animate-spin" />
+                Analyzing...
+              {:else if $result.length > 0}
+                <CheckCircle class="h-4 w-4 mr-2" />
+                Analysis Complete
+              {:else}
+                <Play class="h-4 w-4 mr-2" />
+                Start Analysis
+              {/if}
+            </Button>
+          </div>
+          {#if $result.length > 0}
+            <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+              <CheckCircle class="h-4 w-4 text-white" />
+            </div>
+          {/if}
+        </div>
       </div>
 
+      <!-- 文件列表展示 -->
       {#if $filePaths.length > 0}
-        <div class="rounded-lg border bg-muted/50 p-4">
-          <h3 class="font-medium mb-2">已选择 {$filePaths.length} 个文件:</h3>
-          <ul class="text-sm text-muted-foreground space-y-1 max-h-32 overflow-y-auto">
+        <div class="mt-4 p-4 rounded-lg border border-green-200 bg-green-50/30 dark:border-green-800 dark:bg-green-950/10">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-medium text-green-800 dark:text-green-200 flex items-center">
+              <FileText class="h-4 w-4 mr-2" />
+              Selected Files ({$filePaths.length})
+            </h4>
+            <span class="text-xs text-green-600 bg-green-100 dark:bg-green-900/50 px-2 py-1 rounded-full">
+              Ready for Analysis
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-24 overflow-y-auto">
             {#each $filePaths as file}
-              <li class="truncate">• {file.split(/[\\/]/).pop()}</li>
+              <div class="flex items-center space-x-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded border border-green-100 dark:border-green-800">
+                <div class="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                <span class="text-xs font-medium truncate" title={file}>
+                  {file.split(/[\\/]/).pop()}
+                </span>
+              </div>
             {/each}
-          </ul>
+          </div>
         </div>
       {/if}
     </div>
   </Card>
 
-  <!-- 进度显示 -->
+  <!-- 进度显示 - 现代化设计 -->
   {#if $analyzing}
-    <Card className="p-6">
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold">分析进度</h2>
-        <div class="space-y-2">
-          <div class="flex justify-between text-sm text-muted-foreground">
-            <span>进度: {$progress.current}/{$progress.total}</span>
+    <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+      <div class="space-y-6">
+        <div class="text-center">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full mb-4">
+            <Loader2 class="h-8 w-8 text-blue-600 animate-spin" />
+          </div>
+          <h2 class="text-2xl font-semibold text-blue-800 dark:text-blue-200">Analysis in Progress</h2>
+          <p class="text-blue-600 dark:text-blue-300 mt-2">Please wait while we process your files...</p>
+        </div>
+        
+        <div class="max-w-md mx-auto space-y-4">
+          <div class="flex justify-between text-sm font-medium text-blue-700 dark:text-blue-300">
+            <span>Progress: {$progress.current}/{$progress.total}</span>
             <span>{Math.round(($progress.current / ($progress.total || 1)) * 100)}%</span>
           </div>
-          <div class="w-full bg-secondary rounded-full h-2">
+          <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-3 overflow-hidden">
             <div 
-              class="bg-primary h-2 rounded-full transition-all duration-300" 
+              class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300 ease-out shadow-sm" 
               style="width: {($progress.current / ($progress.total || 1)) * 100}%"
             ></div>
           </div>
           {#if $progress.file}
-            <p class="text-sm text-muted-foreground">当前文件: {$progress.file}</p>
+            <div class="text-center p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+              <p class="text-sm text-muted-foreground">Currently processing:</p>
+              <p class="text-sm font-medium text-blue-700 dark:text-blue-300 truncate" title={$progress.file}>
+                {$progress.file.split(/[\\/]/).pop()}
+              </p>
+            </div>
           {/if}
         </div>
       </div>
@@ -506,17 +666,30 @@
   {#if $result.length > 0}
     <Card className="p-6">
       <div class="space-y-6">
-        <!-- 标题和下载按钮 -->
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-xl font-semibold">分析结果</h2>
-            <p class="text-sm text-muted-foreground mt-1">
-              原始: {$result.length} 个 | 筛选后: {$filteredResult.length} 个 | 当前页: {$finalPaginatedResult.length} 个
-            </p>
+        <!-- 标题和下载按钮 - 优化设计 -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="space-y-2">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <CheckCircle class="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 class="text-2xl font-semibold">Analysis Complete</h2>
+                <p class="text-sm text-muted-foreground">
+                  Original: {$result.length} | After filter: {$filteredResult.length} | On this page: {$finalPaginatedResult.length}
+                </p>
+              </div>
+            </div>
           </div>
-          <Button on:click={downloadCSV} variant="outline" disabled={$filteredResult.length === 0}>
-            <Download class="h-4 w-4 mr-2" />
-            下载CSV
+          <Button 
+            on:click={downloadCSV} 
+            variant="outline" 
+            disabled={$filteredResult.length === 0}
+            size="lg"
+            class="px-6 py-3 border-2"
+          >
+            <Download class="h-5 w-5 mr-2" />
+            Export CSV
           </Button>
         </div>
 
@@ -525,11 +698,11 @@
           <div class="space-y-4">
             <div class="flex items-center gap-2">
               <Filter class="h-4 w-4 text-primary" />
-              <h3 class="font-medium">高级筛选</h3>
+                <h3 class="font-medium">Advanced Filters</h3>
               {#if $filterConfig.wordLength.min || $filterConfig.wordLength.max || $filterConfig.pos.include.length > 0 || $filterConfig.pos.exclude.length > 0 || $filterConfig.metrics.some(m => m.metric && m.value)}
                 <Button size="sm" variant="ghost" on:click={clearFilters}>
                   <X class="h-3 w-3 mr-1" />
-                  清除
+                  Clear
                 </Button>
               {/if}
             </div>
@@ -537,14 +710,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- 词汇长度筛选 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium" for="word-length-filter-min">词汇长度范围</label>
+                <label class="text-sm font-medium" for="word-length-filter-min">Word Length Range</label>
                 <div class="flex gap-2">
                   <input
                     id="word-length-filter-min"
                     class="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     type="number"
                     min="1"
-                    placeholder="最小"
+                    placeholder="Minimum"
                     bind:value={$filterConfig.wordLength.min}
                     on:input={() => currentPage.set(1)}
                   />
@@ -554,7 +727,7 @@
                     class="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     type="number"
                     min="1"
-                    placeholder="最大"
+                    placeholder="Maximum"
                     bind:value={$filterConfig.wordLength.max}
                     on:input={() => currentPage.set(1)}
                   />
@@ -563,7 +736,7 @@
 
               <!-- 词性筛选 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium" for="pos-filter-list">词性（多选/排除）</label>
+                <label class="text-sm font-medium" for="pos-filter-list">Part of Speech (multi-select/exclude)</label>
                 <div id="pos-filter-list" class="flex flex-col gap-1 max-h-32 overflow-y-auto border rounded p-2 bg-background">
                   {#each $uniquePOS as pos}
                     <div class="flex items-center gap-2">
@@ -588,7 +761,7 @@
                       <button
                         type="button"
                         class="ml-2 text-xs px-1 rounded bg-red-100 text-red-600 hover:bg-red-200"
-                        title="排除此词性"
+                        title="Exclude this part of speech"
                         on:click={() => {
                           filterConfig.update(cfg => {
                             if (!cfg.pos.exclude.includes(pos)) {
@@ -598,13 +771,13 @@
                           });
                           currentPage.set(1);
                         }}
-                      >排除</button>
+                      >Exclude</button>
                       {#if $filterConfig.pos.exclude.includes(pos)}
-                        <span class="text-xs text-red-500">已排除</span>
+                        <span class="text-xs text-red-500">Excluded</span>
                         <button
                           type="button"
                           class="ml-1 text-xs px-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
-                          title="取消排除"
+                          title="Cancel Exclusion"
                           on:click={() => {
                             filterConfig.update(cfg => {
                               cfg.pos.exclude = cfg.pos.exclude.filter(p => p !== pos);
@@ -612,7 +785,7 @@
                             });
                             currentPage.set(1);
                           }}
-                        >撤销</button>
+                        >Cancle</button>
                       {/if}
                     </div>
                   {/each}
@@ -623,15 +796,15 @@
             <!-- 指标筛选区域 -->
             <div class="space-y-3">
               <div class="flex items-center justify-between">
-                <label class="text-sm font-medium" for="metric-filter-select">指标筛选</label>
+                <label class="text-sm font-medium" for="metric-filter-select">Metric Filters</label>
                 <Button size="sm" variant="outline" on:click={addMetricFilter}>
-                  <span class="text-sm">+ 添加条件</span>
+                    <span class="text-sm">+ Add Condition</span>
                 </Button>
               </div>
               
               {#if $filterConfig.metrics.length === 0}
                 <div class="text-sm text-muted-foreground bg-muted/30 p-3 rounded border-2 border-dashed">
-                  点击"添加条件"来创建指标筛选条件
+                    Click "+ Add Condition" to create a metric filter condition
                 </div>
               {/if}
 
@@ -644,7 +817,7 @@
                       bind:value={metricFilter.metric}
                       on:change={(e) => updateMetricFilter(index, 'metric', e.target.value)}
                     >
-                      <option value="">选择指标</option>
+                        <option value="">Select Metric</option>
                       {#each $metricColumns as metric}
                         <option value={metric}>{metric}</option>
                       {/each}
@@ -669,7 +842,7 @@
                       class="flex h-9 w-24 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       type="number"
                       step="0.0001"
-                      placeholder="数值"
+                      placeholder="Value"
                       bind:value={metricFilter.value}
                       on:input={(e) => updateMetricFilter(index, 'value', e.target.value)}
                       disabled={!metricFilter.metric}
@@ -715,7 +888,7 @@
                       class="flex items-center space-x-1 hover:bg-muted/20 p-1 rounded transition-colors w-full text-left"
                       on:click={() => handleSort('word')}
                     >
-                      <span>词汇</span>
+                      <span>Word</span>
                       <span class="text-xs opacity-60">
                         {#if $sortConfig.column === 'word'}
                           {#if $sortConfig.direction === 'asc'}↑{:else if $sortConfig.direction === 'desc'}↓{:else}↕{/if}
@@ -732,7 +905,7 @@
                       class="flex items-center space-x-1 hover:bg-muted/20 p-1 rounded transition-colors w-full text-left"
                       on:click={() => handleSort('pos')}
                     >
-                      <span>词性</span>
+                      <span>POS</span>
                       <span class="text-xs opacity-60">
                         {#if $sortConfig.column === 'pos'}
                           {#if $sortConfig.direction === 'asc'}↑{:else if $sortConfig.direction === 'desc'}↓{:else}↕{/if}
@@ -749,7 +922,7 @@
                       <button
                         class="flex items-center space-x-1 hover:bg-muted/20 p-1 rounded transition-colors w-full text-left"
                         on:click={() => handleSort(column)}
-                        title="点击排序: {column}"
+                        title="Click to sort: {column}"
                       >
                         <span class="truncate max-w-[120px]">{column}</span>
                         <span class="text-xs opacity-60 flex-shrink-0">
@@ -804,11 +977,11 @@
               on:click={() => goToPage(Math.max(1, $currentPage - 1))}
               disabled={$currentPage === 1}
             >
-              上一页
+              Previous
             </Button>
             
             <span class="text-sm text-muted-foreground">
-              第 {$currentPage} 页，共 {totalPages} 页
+                Page {$currentPage} of {totalPages}
             </span>
             
             <Button
@@ -817,7 +990,7 @@
               on:click={() => goToPage(Math.min(totalPages, $currentPage + 1))}
               disabled={$currentPage === totalPages}
             >
-              下一页
+              Next
             </Button>
           </div>
         {/if}
@@ -825,12 +998,12 @@
         <!-- 表格功能说明 -->
         {#if $metricColumns.length > 0}
           <div class="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
-            <p class="font-medium mb-1">📊 交互式表格功能：</p>
+            <p class="font-medium mb-1">📊 Interactive Table Features:</p>
             <div class="space-y-1">
-              <p>• <strong>点击列标题</strong>可排序（升序→降序→无排序循环）</p>
-              <p>• <strong>词汇和词性列</strong>固定在左侧，方便对比数据</p>
-              <p>• <strong>数值</strong>保留4位小数，'-' 表示该指标不适用</p>
-              <p>• <strong>鼠标悬停</strong>可查看完整的列名和数值</p>
+              <p>• <strong>Click column headers</strong> to sort (cycles through ascending → descending → none)</p>
+              <p>• <strong>Word</strong> and <strong>POS</strong> columns are fixed on the left for easy comparison</p>
+              <p>• <strong>Numeric values</strong> are shown with 4 decimal places; '-' means the metric is not applicable</p>
+              <p>• <strong>Hover</strong> to see the full column name and value</p>
             </div>
           </div>
         {/if}
@@ -840,13 +1013,13 @@
           <div class="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2">
             <span class="text-blue-600 dark:text-blue-400">🔄</span>
             <span>
-              当前按 <strong>{$sortConfig.column}</strong>
-              {$sortConfig.direction === 'asc' ? '升序' : '降序'} 排列
+              Currently sorted by <strong>{$sortConfig.column}</strong>
+              in {$sortConfig.direction === 'asc' ? 'ascending' : 'descending'} order
             </span>
             <button
               class="ml-auto text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
               on:click={() => sortConfig.set({ column: '', direction: 'none' })}
-              title="清除排序"
+              title="Clear sorting"
             >
               ✕
             </button>
