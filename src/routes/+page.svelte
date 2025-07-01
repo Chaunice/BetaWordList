@@ -539,8 +539,8 @@
 
               <!-- 词性筛选 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium">词性（多选/排除）</label>
-                <div class="flex flex-col gap-1 max-h-32 overflow-y-auto border rounded p-2 bg-background">
+                <label class="text-sm font-medium" for="pos-filter-list">词性（多选/排除）</label>
+                <div id="pos-filter-list" class="flex flex-col gap-1 max-h-32 overflow-y-auto border rounded p-2 bg-background">
                   {#each $uniquePOS as pos}
                     <div class="flex items-center gap-2">
                       <input
@@ -597,8 +597,9 @@
 
               <!-- 指标筛选 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium">指标</label>
+                <label class="text-sm font-medium" for="metric-filter-select">指标</label>
                 <select
+                  id="metric-filter-select"
                   class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   bind:value={$filterConfig.metric}
                   on:change={() => currentPage.set(1)}
@@ -612,9 +613,10 @@
 
               <!-- 指标条件 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium">条件</label>
+                <label class="text-sm font-medium" for="operator-filter-select">条件</label>
                 <div class="flex gap-1">
                   <select
+                    id="operator-filter-select"
                     class="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     bind:value={$filterConfig.operator}
                     disabled={!$filterConfig.metric}
