@@ -184,25 +184,30 @@
   );
 
   // 筛选状态
+  // 筛选配置：词长范围、词性多选（包含/排除）、指标
   const filterConfig = writable({
-    wordLength: '',
-    pos: '',
+    wordLength: { min: '', max: '' }, // 支持范围
+    pos: { include: [], exclude: [] }, // 支持包含/排除
     metric: '',
-    operator: 'gt', // gt, lt, gte, lte, eq
+    operator: 'gt',
     value: ''
   });
 
   // 筛选后的结果
   const filteredResult = derived([sortedResult, filterConfig], ([$sortedResult, $filterConfig]) => {
     return $sortedResult.filter(item => {
-      // 词汇长度筛选
-      if ($filterConfig.wordLength && $filterConfig.wordLength !== '') {
-        const targetLength = parseInt($filterConfig.wordLength);
-        if (item.word.length !== targetLength) return false;
+      // 词汇长度范围筛选
+      const minLen = parseInt($filterConfig.wordLength.min) || 0;
+      const maxLen = parseInt($filterConfig.wordLength.max) || 99;
+      if ($filterConfig.wordLength.min !== '' || $filterConfig.wordLength.max !== '') {
+        if (item.word.length < minLen || item.word.length > maxLen) return false;
       }
 
-      // 词性筛选
-      if ($filterConfig.pos && $filterConfig.pos !== '' && item.pos !== $filterConfig.pos) {
+      // 词性多选筛选（包含/排除）
+      if (
+        ($filterConfig.pos.include.length > 0 && !$filterConfig.pos.include.includes(item.pos)) ||
+        ($filterConfig.pos.exclude.length > 0 && $filterConfig.pos.exclude.includes(item.pos))
+      ) {
         return false;
       }
 
@@ -210,10 +215,10 @@
       if ($filterConfig.metric && $filterConfig.value && $filterConfig.value !== '') {
         const metricValue = item.metrics[$filterConfig.metric];
         const targetValue = parseFloat($filterConfig.value);
-        
+
         if (metricValue === undefined || metricValue === null) return false;
         if (typeof metricValue !== 'number') return false;
-        
+
         switch ($filterConfig.operator) {
           case 'gt': return metricValue > targetValue;
           case 'lt': return metricValue < targetValue;
@@ -266,8 +271,8 @@
   // 清除筛选
   function clearFilters() {
     filterConfig.set({
-      wordLength: '',
-      pos: '',
+      wordLength: { min: '', max: '' },
+      pos: { include: [], exclude: [] },
       metric: '',
       operator: 'gt',
       value: ''
@@ -508,36 +513,86 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <!-- 词汇长度筛选 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium" for="word-length-filter">词汇长度</label>
-                <select
-                  id="word-length-filter"
-                  class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  bind:value={$filterConfig.wordLength}
-                  on:change={() => currentPage.set(1)}
-                >
-                  <option value="">全部</option>
-                  <option value="1">1字词</option>
-                  <option value="2">2字词</option>
-                  <option value="3">3字词</option>
-                  <option value="4">4字词</option>
-                  <option value="5">5字词</option>
-                  <option value="6">6字词及以上</option>
-                </select>
+                <label class="text-sm font-medium" for="word-length-filter-min">词汇长度范围</label>
+                <div class="flex gap-2">
+                  <input
+                    id="word-length-filter-min"
+                    class="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    type="number"
+                    min="1"
+                    placeholder="最小"
+                    bind:value={$filterConfig.wordLength.min}
+                    on:input={() => currentPage.set(1)}
+                  />
+                  <span class="self-center">~</span>
+                  <input
+                    id="word-length-filter-max"
+                    class="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    type="number"
+                    min="1"
+                    placeholder="最大"
+                    bind:value={$filterConfig.wordLength.max}
+                    on:input={() => currentPage.set(1)}
+                  />
+                </div>
               </div>
 
               <!-- 词性筛选 -->
               <div class="space-y-2">
-                <label class="text-sm font-medium">词性</label>
-                <select
-                  class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  bind:value={$filterConfig.pos}
-                  on:change={() => currentPage.set(1)}
-                >
-                  <option value="">全部</option>
+                <label class="text-sm font-medium">词性（多选/排除）</label>
+                <div class="flex flex-col gap-1 max-h-32 overflow-y-auto border rounded p-2 bg-background">
                   {#each $uniquePOS as pos}
-                    <option value={pos}>{pos}</option>
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={"pos-inc-" + pos}
+                        checked={$filterConfig.pos.include.includes(pos)}
+                        on:change={e => {
+                          const checked = e.target.checked;
+                          filterConfig.update(cfg => {
+                            if (checked) {
+                              cfg.pos.include = [...cfg.pos.include, pos];
+                            } else {
+                              cfg.pos.include = cfg.pos.include.filter(p => p !== pos);
+                            }
+                            return cfg;
+                          });
+                          currentPage.set(1);
+                        }}
+                      />
+                      <label for={"pos-inc-" + pos} class="text-xs">{pos}</label>
+                      <button
+                        type="button"
+                        class="ml-2 text-xs px-1 rounded bg-red-100 text-red-600 hover:bg-red-200"
+                        title="排除此词性"
+                        on:click={() => {
+                          filterConfig.update(cfg => {
+                            if (!cfg.pos.exclude.includes(pos)) {
+                              cfg.pos.exclude = [...cfg.pos.exclude, pos];
+                            }
+                            return cfg;
+                          });
+                          currentPage.set(1);
+                        }}
+                      >排除</button>
+                      {#if $filterConfig.pos.exclude.includes(pos)}
+                        <span class="text-xs text-red-500">已排除</span>
+                        <button
+                          type="button"
+                          class="ml-1 text-xs px-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          title="取消排除"
+                          on:click={() => {
+                            filterConfig.update(cfg => {
+                              cfg.pos.exclude = cfg.pos.exclude.filter(p => p !== pos);
+                              return cfg;
+                            });
+                            currentPage.set(1);
+                          }}
+                        >撤销</button>
+                      {/if}
+                    </div>
                   {/each}
-                </select>
+                </div>
               </div>
 
               <!-- 指标筛选 -->
@@ -738,3 +793,4 @@
     </Card>
   {/if}
 </div>
+

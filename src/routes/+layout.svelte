@@ -13,7 +13,7 @@
       <!-- 左侧品牌 -->
       <div class="mr-4 flex">
         <a class="mr-6 flex items-center space-x-2" href="/">
-          <span class="font-bold text-xl tracking-tight">BetaWordlist</span>
+          <span class="font-bold text-xl tracking-tight">BetaWordList</span>
         </a>
       </div>
       
@@ -22,7 +22,7 @@
         <nav class="flex items-center space-x-2">
           <a
             class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring hover:bg-accent hover:text-accent-foreground h-9 px-3"
-            href="https://github.com/your-repo"
+            href="https://github.com/Chaunice/BetaWordList"
             target="_blank"
             rel="noreferrer"
           >
