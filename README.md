@@ -71,7 +71,7 @@ BetaWordList enables you to:
 - [ ] In-app help/documentation
 - [ ] Improved accessibility (a11y) and keyboard navigation
 - [ ] Performance optimization for extremely large corpora
-- [ ] Dark mode toggle
+- [x] Dark mode toggle
 
 ## 🤝 Contributing
 
