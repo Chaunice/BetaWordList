@@ -623,7 +623,7 @@
             <!-- 指标筛选区域 -->
             <div class="space-y-3">
               <div class="flex items-center justify-between">
-                <label class="text-sm font-medium">指标筛选</label>
+                <label class="text-sm font-medium" for="metric-filter-select">指标筛选</label>
                 <Button size="sm" variant="outline" on:click={addMetricFilter}>
                   <span class="text-sm">+ 添加条件</span>
                 </Button>
