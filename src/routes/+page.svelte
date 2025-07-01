@@ -184,13 +184,11 @@
   );
 
   // 筛选状态
-  // 筛选配置：词长范围、词性多选（包含/排除）、指标
+  // 筛选配置：词长范围、词性多选（包含/排除）、多个指标筛选
   const filterConfig = writable({
     wordLength: { min: '', max: '' }, // 支持范围
     pos: { include: [], exclude: [] }, // 支持包含/排除
-    metric: '',
-    operator: 'gt',
-    value: ''
+    metrics: [] // 支持多个指标筛选: [{metric: '', operator: 'gt', value: ''}]
   });
 
   // 筛选后的结果
@@ -211,21 +209,23 @@
         return false;
       }
 
-      // 指标筛选
-      if ($filterConfig.metric && $filterConfig.value && $filterConfig.value !== '') {
-        const metricValue = item.metrics[$filterConfig.metric];
-        const targetValue = parseFloat($filterConfig.value);
+      // 多个指标筛选
+      for (const metricFilter of $filterConfig.metrics) {
+        if (metricFilter.metric && metricFilter.value && metricFilter.value !== '') {
+          const metricValue = item.metrics[metricFilter.metric];
+          const targetValue = parseFloat(metricFilter.value);
 
-        if (metricValue === undefined || metricValue === null) return false;
-        if (typeof metricValue !== 'number') return false;
+          if (metricValue === undefined || metricValue === null) return false;
+          if (typeof metricValue !== 'number') return false;
 
-        switch ($filterConfig.operator) {
-          case 'gt': return metricValue > targetValue;
-          case 'lt': return metricValue < targetValue;
-          case 'gte': return metricValue >= targetValue;
-          case 'lte': return metricValue <= targetValue;
-          case 'eq': return Math.abs(metricValue - targetValue) < 0.0001;
-          default: return true;
+          switch (metricFilter.operator) {
+            case 'gt': if (!(metricValue > targetValue)) return false; break;
+            case 'lt': if (!(metricValue < targetValue)) return false; break;
+            case 'gte': if (!(metricValue >= targetValue)) return false; break;
+            case 'lte': if (!(metricValue <= targetValue)) return false; break;
+            case 'eq': if (!(Math.abs(metricValue - targetValue) < 0.0001)) return false; break;
+            default: break;
+          }
         }
       }
 
@@ -273,9 +273,33 @@
     filterConfig.set({
       wordLength: { min: '', max: '' },
       pos: { include: [], exclude: [] },
-      metric: '',
-      operator: 'gt',
-      value: ''
+      metrics: []
+    });
+    currentPage.set(1);
+  }
+
+  // 添加指标筛选条件
+  function addMetricFilter() {
+    filterConfig.update(cfg => {
+      cfg.metrics = [...cfg.metrics, { metric: '', operator: 'gt', value: '' }];
+      return cfg;
+    });
+  }
+
+  // 删除指标筛选条件
+  function removeMetricFilter(index) {
+    filterConfig.update(cfg => {
+      cfg.metrics = cfg.metrics.filter((_, i) => i !== index);
+      return cfg;
+    });
+    currentPage.set(1);
+  }
+
+  // 更新指标筛选条件
+  function updateMetricFilter(index, field, value) {
+    filterConfig.update(cfg => {
+      cfg.metrics[index][field] = value;
+      return cfg;
     });
     currentPage.set(1);
   }
@@ -502,7 +526,7 @@
             <div class="flex items-center gap-2">
               <Filter class="h-4 w-4 text-primary" />
               <h3 class="font-medium">高级筛选</h3>
-              {#if $filterConfig.wordLength || $filterConfig.pos || ($filterConfig.metric && $filterConfig.value)}
+              {#if $filterConfig.wordLength.min || $filterConfig.wordLength.max || $filterConfig.pos.include.length > 0 || $filterConfig.pos.exclude.length > 0 || $filterConfig.metrics.some(m => m.metric && m.value)}
                 <Button size="sm" variant="ghost" on:click={clearFilters}>
                   <X class="h-3 w-3 mr-1" />
                   清除
@@ -510,7 +534,7 @@
               {/if}
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- 词汇长度筛选 -->
               <div class="space-y-2">
                 <label class="text-sm font-medium" for="word-length-filter-min">词汇长度范围</label>
@@ -594,50 +618,87 @@
                   {/each}
                 </div>
               </div>
+            </div>
 
-              <!-- 指标筛选 -->
-              <div class="space-y-2">
-                <label class="text-sm font-medium" for="metric-filter-select">指标</label>
-                <select
-                  id="metric-filter-select"
-                  class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  bind:value={$filterConfig.metric}
-                  on:change={() => currentPage.set(1)}
-                >
-                  <option value="">选择指标</option>
-                  {#each $metricColumns as metric}
-                    <option value={metric}>{metric}</option>
-                  {/each}
-                </select>
+            <!-- 指标筛选区域 -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-sm font-medium">指标筛选</label>
+                <Button size="sm" variant="outline" on:click={addMetricFilter}>
+                  <span class="text-sm">+ 添加条件</span>
+                </Button>
               </div>
-
-              <!-- 指标条件 -->
-              <div class="space-y-2">
-                <label class="text-sm font-medium" for="operator-filter-select">条件</label>
-                <div class="flex gap-1">
-                  <select
-                    id="operator-filter-select"
-                    class="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    bind:value={$filterConfig.operator}
-                    disabled={!$filterConfig.metric}
-                  >
-                    <option value="gt">&gt;</option>
-                    <option value="gte">&gt;=</option>
-                    <option value="lt">&lt;</option>
-                    <option value="lte">&lt;=</option>
-                    <option value="eq">=</option>
-                  </select>
-                  <input
-                    class="flex h-9 flex-1 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    type="number"
-                    step="0.0001"
-                    placeholder="数值"
-                    bind:value={$filterConfig.value}
-                    disabled={!$filterConfig.metric}
-                    on:input={() => currentPage.set(1)}
-                  />
+              
+              {#if $filterConfig.metrics.length === 0}
+                <div class="text-sm text-muted-foreground bg-muted/30 p-3 rounded border-2 border-dashed">
+                  点击"添加条件"来创建指标筛选条件
                 </div>
-              </div>
+              {/if}
+
+              {#each $filterConfig.metrics as metricFilter, index}
+                <div class="flex items-center gap-2 p-3 border rounded-lg bg-background">
+                  <div class="flex items-center gap-2 flex-1">
+                    <!-- 指标选择 -->
+                    <select
+                      class="flex h-9 w-32 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      bind:value={metricFilter.metric}
+                      on:change={(e) => updateMetricFilter(index, 'metric', e.target.value)}
+                    >
+                      <option value="">选择指标</option>
+                      {#each $metricColumns as metric}
+                        <option value={metric}>{metric}</option>
+                      {/each}
+                    </select>
+
+                    <!-- 操作符选择 -->
+                    <select
+                      class="flex h-9 w-16 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      bind:value={metricFilter.operator}
+                      on:change={(e) => updateMetricFilter(index, 'operator', e.target.value)}
+                      disabled={!metricFilter.metric}
+                    >
+                      <option value="gt">&gt;</option>
+                      <option value="gte">&gt;=</option>
+                      <option value="lt">&lt;</option>
+                      <option value="lte">&lt;=</option>
+                      <option value="eq">=</option>
+                    </select>
+
+                    <!-- 数值输入 -->
+                    <input
+                      class="flex h-9 w-24 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      type="number"
+                      step="0.0001"
+                      placeholder="数值"
+                      bind:value={metricFilter.value}
+                      on:input={(e) => updateMetricFilter(index, 'value', e.target.value)}
+                      disabled={!metricFilter.metric}
+                    />
+
+                    <!-- 条件描述 -->
+                    {#if metricFilter.metric && metricFilter.value}
+                      <span class="text-sm text-muted-foreground">
+                        {metricFilter.metric} 
+                        {metricFilter.operator === 'gt' ? '>' : 
+                         metricFilter.operator === 'gte' ? '>=' : 
+                         metricFilter.operator === 'lt' ? '<' : 
+                         metricFilter.operator === 'lte' ? '<=' : '='} 
+                        {metricFilter.value}
+                      </span>
+                    {/if}
+                  </div>
+
+                  <!-- 删除按钮 -->
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    on:click={() => removeMetricFilter(index)}
+                    class="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <X class="h-4 w-4" />
+                  </Button>
+                </div>
+              {/each}
             </div>
           </div>
         </Card>
