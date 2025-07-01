@@ -12,4 +12,3 @@ vite.config.ts.timestamp-*
 /test_files
 /python_legacy
 /.vscode
-legacy
