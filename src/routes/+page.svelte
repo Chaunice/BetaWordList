@@ -285,6 +285,15 @@
   }
 
   $: totalPages = Math.ceil($filteredResult.length / itemsPerPage);
+
+  // 计算整体进度宽度
+  function getProgressWidth() {
+    let progress = 0;
+    if ($filePaths.length > 0) progress += 33;
+    if ($modelLoaded) progress += 33;
+    if ($result.length > 0) progress += 34;
+    return progress;
+  }
 </script>
 
 <style>
@@ -300,6 +309,65 @@
   .animate-slide-in { animation: slideIn 0.3s ease-out; }
   .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); }
   .active-scale:active { transform: scale(0.95); }
+
+  /* 自定义动画 */
+  @keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.6s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out forwards;
+    opacity: 0;
+  }
+
+  .pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* 自定义滚动条 */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(34 197 94) rgb(243 244 246);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgb(243 244 246);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(34 197 94);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(22 163 74);
+  }
 </style>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-blue-950 p-6 space-y-8">
@@ -344,74 +412,202 @@
   </div>
 
   <!-- Operation Card -->
-  <Card className="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hover-lift transition-all duration-300">
+  <Card class="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hover-lift transition-all duration-300">
     <div class="space-y-8">
       <div class="text-center">
         <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Get Started</h2>
         <p class="text-gray-600 dark:text-gray-400">Three simple steps to analyze your files</p>
       </div>
+      
+      <!-- Progress Bar -->
+      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-8">
+        <div 
+          class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-700 ease-out"
+          style="width: {getProgressWidth()}%"
+        ></div>
+      </div>
+      
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {#each [
-          { step: 1, title: 'Select Files', desc: 'Choose text files', icon: FileText, action: selectFiles, disabled: $analyzing, condition: $filePaths.length > 0 },
-          { step: 2, title: 'Load Models', desc: 'Initialize NLP models', icon: Settings, action: loadModel, disabled: $analyzing || $modelLoaded, condition: $modelLoaded },
-          { step: 3, title: 'Start Analysis', desc: 'Process and extract insights', icon: Play, action: analyze, disabled: $analyzing || $filePaths.length === 0 || !$modelLoaded, condition: $result.length > 0 }
+          { 
+            step: 1, 
+            title: 'Select Files', 
+            desc: 'Choose text files', 
+            icon: FileText, 
+            action: selectFiles, 
+            disabled: $analyzing, 
+            isCompleted: $filePaths.length > 0,
+            isActive: !$filePaths.length && !$analyzing,
+            isProcessing: false
+          },
+          { 
+            step: 2, 
+            title: 'Load Models', 
+            desc: 'Initialize NLP models', 
+            icon: Settings, 
+            action: loadModel, 
+            disabled: $analyzing || $modelLoaded || $filePaths.length === 0, 
+            isCompleted: $modelLoaded,
+            isActive: $filePaths.length > 0 && !$modelLoaded && !$analyzing,
+            isProcessing: $modelStatus && !$modelLoaded
+          },
+          { 
+            step: 3, 
+            title: 'Start Analysis', 
+            desc: 'Process and extract insights', 
+            icon: Play, 
+            action: analyze, 
+            disabled: $analyzing || $filePaths.length === 0 || !$modelLoaded, 
+            isCompleted: $result.length > 0,
+            isActive: $modelLoaded && $result.length === 0 && !$analyzing,
+            isProcessing: $analyzing
+          }
         ] as step}
           <div class={cn(
-            "relative p-6 rounded-xl border-2 transition-all duration-300 hover-lift",
-            step.condition ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/30" : "border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/30"
+            "relative p-6 rounded-xl border-2 transition-all duration-500 ease-out transform",
+            "hover:scale-105 hover:shadow-lg",
+            step.isCompleted 
+              ? "border-green-300 bg-gradient-to-br from-green-50 to-green-100 dark:border-green-600 dark:from-green-900/20 dark:to-green-800/30 shadow-green-100 dark:shadow-green-900/20" 
+              : step.isActive 
+                ? "border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-600 dark:from-blue-900/20 dark:to-blue-800/30 shadow-blue-100 dark:shadow-blue-900/20 ring-2 ring-blue-200 dark:ring-blue-700" 
+                : step.isProcessing
+                  ? "border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100 dark:border-amber-600 dark:from-amber-900/20 dark:to-amber-800/30 shadow-amber-100 dark:shadow-amber-900/20"
+                  : "border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 dark:border-gray-600 dark:from-gray-700/30 dark:to-gray-600/30"
           )}>
+            
+            <!-- Step Content -->
             <div class="flex flex-col items-center text-center space-y-4">
-              <div class={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300",
-                step.condition ? "bg-green-500 text-white shadow-md" : $analyzing && step.step === 3 ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
-              )}>
-                {#if step.condition}
-                  <CheckCircle class="h-6 w-6" />
-                {:else if $analyzing && step.step === 3}
-                  <Loader2 class="h-6 w-6 animate-spin" />
-                {:else}
-                  {step.step}
+              
+              <!-- Icon/Progress Circle -->
+              <div class="relative">
+                <div class={cn(
+                  "w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-500 ease-out",
+                  step.isCompleted 
+                    ? "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg transform scale-110" 
+                    : step.isProcessing
+                      ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg"
+                      : step.isActive 
+                        ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg pulse" 
+                        : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                )}>
+                  {#if step.isCompleted}
+                    <CheckCircle class="h-7 w-7 animate-bounce-in" />
+                  {:else if step.isProcessing}
+                    <Loader2 class="h-7 w-7 animate-spin" />
+                  {:else}
+                    <svelte:component this={step.icon} class="h-7 w-7" />
+                  {/if}
+                </div>
+                
+                <!-- Processing Ring -->
+                {#if step.isProcessing}
+                  <div class="absolute inset-0 rounded-full border-4 border-t-transparent border-amber-300 animate-spin"></div>
+                {/if}
+                
+                <!-- Active Pulse Ring -->
+                {#if step.isActive && !step.isProcessing}
+                  <div class="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping opacity-75"></div>
                 {/if}
               </div>
-              <h3 class="font-semibold text-lg text-gray-800 dark:text-gray-100">{step.title}</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{step.desc}</p>
+              
+              <!-- Title and Description -->
+              <div class="space-y-2">
+                <h3 class={cn(
+                  "font-semibold text-lg transition-colors duration-300",
+                  step.isCompleted ? "text-green-800 dark:text-green-200" 
+                  : step.isActive ? "text-blue-800 dark:text-blue-200"
+                  : step.isProcessing ? "text-amber-800 dark:text-amber-200"
+                  : "text-gray-800 dark:text-gray-100"
+                )}>{step.title}</h3>
+                <p class={cn(
+                  "text-sm transition-colors duration-300",
+                  step.isCompleted ? "text-green-600 dark:text-green-400" 
+                  : step.isActive ? "text-blue-600 dark:text-blue-400"
+                  : step.isProcessing ? "text-amber-600 dark:text-amber-400"
+                  : "text-gray-600 dark:text-gray-400"
+                )}>{step.desc}</p>
+              </div>
+              
+              <!-- Action Button -->
               <Button 
                 on:click={step.action} 
                 disabled={step.disabled}
-                class={cn("w-full transition-all duration-200 active-scale", step.condition && "bg-green-600 hover:bg-green-700")}
-                variant={step.condition ? "default" : "outline"}
+                class={cn(
+                  "w-full transition-all duration-300 transform hover:scale-105 active:scale-95",
+                  step.isCompleted && "bg-green-600 hover:bg-green-700 shadow-lg",
+                  step.isActive && "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg",
+                  step.isProcessing && "bg-amber-500 hover:bg-amber-600"
+                )}
+                variant={step.isCompleted || step.isActive ? "default" : "outline"}
               >
-                <svelte:component this={step.icon} class="h-4 w-4 mr-2" />
-                {#if step.step === 1}
-                  {step.condition ? `${$filePaths.length} File${$filePaths.length > 1 ? 's' : ''} Selected` : 'Select Files'}
-                {:else if step.step === 2}
-                  {#if $modelStatus}<Loader2 class="h-4 w-4 mr-2 animate-spin" />{$modelStatus}{:else}{step.condition ? 'Models Ready' : 'Load Models'}{/if}
-                {:else}
-                  {#if $analyzing}Analyzing...{:else}{step.condition ? 'Analysis Complete' : 'Start Analysis'}{/if}
-                {/if}
+                <div class="flex items-center justify-center space-x-2">
+                  {#if step.isProcessing}
+                    <Loader2 class="h-4 w-4 animate-spin" />
+                  {:else}
+                    <svelte:component this={step.icon} class="h-4 w-4" />
+                  {/if}
+                  <span>
+                    {#if step.step === 1}
+                      {step.isCompleted ? `${$filePaths.length} File${$filePaths.length > 1 ? 's' : ''} Selected` : 'Select Files'}
+                    {:else if step.step === 2}
+                      {#if step.isProcessing}
+                        {$modelStatus || 'Loading...'}
+                      {:else}
+                        {step.isCompleted ? 'Models Ready' : 'Load Models'}
+                      {/if}
+                    {:else}
+                      {#if step.isProcessing}
+                        Analyzing...
+                      {:else}
+                        {step.isCompleted ? 'Analysis Complete' : 'Start Analysis'}
+                      {/if}
+                    {/if}
+                  </span>
+                </div>
               </Button>
             </div>
-            {#if step.condition}
-              <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                <CheckCircle class="h-4 w-4 text-white" />
+            
+            <!-- Completion Badge -->
+            {#if step.isCompleted}
+              <div class="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg animate-bounce-in">
+                <CheckCircle class="h-5 w-5 text-white" />
               </div>
+            {/if}
+            
+            <!-- Connection Line to Next Step -->
+            {#if step.step < 3}
+              <div class={cn(
+                "hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 transition-all duration-500",
+                step.isCompleted ? "bg-green-400" : step.isActive ? "bg-blue-400" : "bg-gray-300"
+              )}></div>
             {/if}
           </div>
         {/each}
       </div>
+      
+      <!-- File List -->
       {#if $filePaths.length > 0}
-        <div class="mt-6 p-4 rounded-lg border border-green-200 bg-green-50/50 dark:border-green-700 dark:bg-green-900/20 animate-fade-in">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-medium text-green-800 dark:text-green-200 flex items-center">
-              <FileText class="h-4 w-4 mr-2" /> Selected Files ({$filePaths.length})
+        <div class="mt-8 p-6 rounded-xl border border-green-200 bg-gradient-to-br from-green-50/50 to-green-100/30 dark:border-green-700 dark:bg-gradient-to-br dark:from-green-900/20 dark:to-green-800/10 animate-slide-up shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-semibold text-green-800 dark:text-green-200 flex items-center">
+              <FileText class="h-5 w-5 mr-2" /> 
+              Selected Files ({$filePaths.length})
             </h4>
-            <span class="text-xs text-green-600 bg-green-100 dark:bg-green-800 px-2 py-1 rounded-full">Ready</span>
+            <div class="flex items-center space-x-2">
+              <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span class="text-xs font-medium text-green-700 bg-green-200 dark:bg-green-800 dark:text-green-200 px-3 py-1 rounded-full">
+                Ready
+              </span>
+            </div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-24 overflow-y-auto">
-            {#each $filePaths as file}
-              <div class="flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded border border-green-100 dark:border-green-700">
-                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span class="text-xs truncate" title={file}>{file.split(/[\\/]/).pop()}</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-32 overflow-y-auto custom-scrollbar">
+            {#each $filePaths as file, index}
+              <div class="flex items-center gap-3 p-3 bg-white/80 dark:bg-gray-800/60 rounded-lg border border-green-100 dark:border-green-700 hover:shadow-md transition-all duration-200 animate-fade-in"
+                  style="animation-delay: {index * 50}ms">
+                <div class="w-3 h-3 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex-shrink-0 animate-pulse"></div>
+                <span class="text-sm text-gray-700 dark:text-gray-300 truncate font-medium" title={file}>
+                  {file.split(/[\\/]/).pop()}
+                </span>
               </div>
             {/each}
           </div>
