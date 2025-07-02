@@ -1,6 +1,6 @@
 # BetaWordList
 
-**BetaWordList** is a modern, cross-platform vocabulary analysis tool built with [Tauri](https://tauri.app/), [Svelte](https://svelte.dev/), and Rust. Designed for linguists, researchers, and anyone needing to build word lists from large-scale Chinese text corpora efficiently and interactively.
+**BetaWordList** is a modern, cross-platform vocabulary analysis tool built with [Tauri](https://tauri.app/), [Svelte](https://svelte.dev/), and [Rust](https://www.rust-lang.org/). Designed for linguists, researchers, and anyone needing to build word lists from large-scale Chinese text corpora efficiently and interactively.
 
 ## 🚀 Overview
 
@@ -40,7 +40,8 @@ BetaWordList enables you to:
 ## 🛠️ Tech Stack
 
 - **Frontend:** Svelte, TailwindCSS, Lucide Icons
-- **Backend:** Rust, Tauri, LTP NLP library
+- **Backend:** Rust, Tauri
+- **NLP:** LTP (Language Technology Platform), custom Rust NLP modules
 - **File System:** Secure, permission-based access via Tauri plugins
 
 ## 📦 Getting Started
@@ -79,4 +80,17 @@ Pull requests, issues, and suggestions are welcome! Please open an issue or PR i
 
 ## 📄 License
 
-MIT
+[MIT](https://opensource.org/licenses/MIT)
+
+## 🙏 Acknowledgements
+
+This project makes use of the following open source projects:
+
+- [Tauri](https://tauri.app/)
+- [Svelte](https://svelte.dev/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [Lucide Icons](https://lucide.dev/)
+- [LTP](https://github.com/HIT-SCIR/ltp)
+- [corpus-dispersion](https://github.com/Chaunice/corpus_dispersion)
+
+Special thanks to the developers and communities behind these projects for their excellent work.

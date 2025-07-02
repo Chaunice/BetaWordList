@@ -8,8 +8,15 @@
 
   // 初始化时检测本地存储或系统主题
   if (typeof window !== 'undefined') {
-    isDark = localStorage.getItem('theme') === 'dark' ||
-      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const stored = localStorage.getItem('theme');
+    if (stored) {
+      isDark = stored === 'dark';
+    } else {
+      // 如果没有存储的主题，使用系统偏好设置
+      isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // 保存初始的系统偏好设置
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
     updateTheme();
   }
 

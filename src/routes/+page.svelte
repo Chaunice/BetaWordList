@@ -142,7 +142,11 @@
     }
   );
 
-  const filterConfig = writable({
+  const filterConfig = writable<{
+    wordLength: { min: string; max: string };
+    pos: { include: string[]; exclude: string[] };
+    metrics: Array<{ metric: string; operator: string; value: string }>;
+  }>({
     wordLength: { min: '', max: '' },
     pos: { include: [], exclude: [] },
     metrics: []
@@ -192,6 +196,20 @@
     return Array.from(posSet).sort();
   });
 
+  // POS filter search
+  const posSearchInclude = writable('');
+  const posSearchExclude = writable('');
+  
+  const filteredPOSInclude = derived([uniquePOS, posSearchInclude], ([$uniquePOS, $search]) => {
+    if (!$search) return $uniquePOS;
+    return $uniquePOS.filter(pos => pos.toLowerCase().includes($search.toLowerCase()));
+  });
+  
+  const filteredPOSExclude = derived([uniquePOS, posSearchExclude], ([$uniquePOS, $search]) => {
+    if (!$search) return $uniquePOS;
+    return $uniquePOS.filter(pos => pos.toLowerCase().includes($search.toLowerCase()));
+  });
+
   function handleSort(column: string) {
     sortConfig.update(current => {
       if (current.column === column) {
@@ -218,7 +236,7 @@
     });
   }
 
-  function removeMetricFilter(index) {
+  function removeMetricFilter(index: number) {
     filterConfig.update(cfg => {
       cfg.metrics = cfg.metrics.filter((_, i) => i !== index);
       return cfg;
@@ -226,9 +244,9 @@
     currentPage.set(1);
   }
 
-  function updateMetricFilter(index, field, value) {
+  function updateMetricFilter(index: number, field: string, value: string) {
     filterConfig.update(cfg => {
-      cfg.metrics[index][field] = value;
+      (cfg.metrics[index] as any)[field] = value;
       return cfg;
     });
     currentPage.set(1);
@@ -329,9 +347,43 @@
     --error-500: #ef4444;
     --error-600: #dc2626;
     
-    --glass-bg: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.18);
+    /* Dynamic theme variables */
+    --bg-primary: theme('colors.slate.900');
+    --bg-secondary: theme('colors.slate.800');
+    --bg-accent: theme('colors.purple.900');
+    --text-primary: theme('colors.white');
+    --text-secondary: theme('colors.gray.300');
+    --text-muted: theme('colors.gray.400');
+    --border-color: theme('colors.gray.700');
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.15);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  /* Dark mode (default) */
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-accent: #581c87;
+    --text-primary: #ffffff;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --border-color: #374151;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Light mode */
+  :root:not(.dark) {
+    --bg-primary: #f9fafb;
+    --bg-secondary: #ffffff;
+    --bg-accent: #dbeafe;
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
   }
 
   * {
@@ -418,19 +470,25 @@
     -webkit-backdrop-filter: blur(25px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
+    color: var(--text-primary);
   }
 
   .glass-button {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--glass-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--glass-border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-primary);
   }
 
   .glass-button:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  :root:not(.dark) .glass-button:hover {
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .gradient-text {
@@ -491,6 +549,7 @@
 
   .table-row {
     transition: all 0.2s ease;
+    color: var(--text-primary);
   }
 
   .table-row:hover {
@@ -498,49 +557,75 @@
     transform: translateX(4px);
   }
 
-  .floating-element {
-    position: absolute;
-    pointer-events: none;
-    opacity: 0.1;
-  }
-
-  .floating-circle {
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, var(--primary-400), transparent);
-    border-radius: 50%;
-    animation: float 8s ease-in-out infinite;
-  }
-
-  .floating-square {
-    width: 150px;
-    height: 150px;
-    background: linear-gradient(45deg, var(--primary-500), var(--secondary-500));
-    transform: rotate(45deg);
-    animation: float 10s ease-in-out infinite reverse;
-  }
-
   .stats-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    background: var(--glass-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
     transition: all 0.3s ease;
+    color: var(--text-primary);
   }
 
   .stats-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
+
+  /* Update input and select styles for theme support */
+  input, select {
+    transition: all 0.2s ease;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-400) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+  }
+
+  :root:not(.dark) input,
+  :root:not(.dark) select {
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+  }
+
+  :root:not(.dark) input::placeholder {
+    color: var(--text-muted) !important;
+  }
+
+  /* Option elements styling for better theme support */
+  select option {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    padding: 8px 12px;
+  }
+
+  /* Light mode option styling */
+  :root:not(.dark) select option {
+    background: #ffffff;
+    color: #1f2937;
+  }
+
+  /* Dark mode option styling for better contrast */
+  :global(.dark) select option {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+
+  :root:not(.dark) .table-row:hover {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), rgba(168, 85, 247, 0.05));
+  }
+
+  /* ...existing code... */
 </style>
 
-<div class="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+<div class="min-h-screen relative overflow-hidden transition-colors duration-300" style="background: linear-gradient(135deg, var(--bg-primary), var(--bg-accent), var(--bg-primary));">
   <!-- Floating Background Elements -->
   <div class="floating-element floating-circle top-20 left-10 animate-float"></div>
   <div class="floating-element floating-square top-40 right-20" style="animation-delay: -2s;"></div>
   <div class="floating-element floating-circle bottom-20 right-10" style="animation-delay: -4s;"></div>
   
   <!-- Gradient Overlay -->
-  <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10"></div>
+  <div class="absolute inset-0 opacity-50" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));"></div>
   
   <div class="relative z-10 p-6 space-y-8">
     <!-- Toast Notifications -->
@@ -549,9 +634,9 @@
         {#each $toasts as toast (toast.id)}
           <div class={cn(
             "animate-slide-down glass-card rounded-2xl p-4 border-l-4 transition-all duration-300",
-            toast.type === 'success' && "border-l-green-400 bg-green-900/20 text-green-100",
-            toast.type === 'error' && "border-l-red-400 bg-red-900/20 text-red-100",
-            toast.type === 'warning' && "border-l-yellow-400 bg-yellow-900/20 text-yellow-100"
+            toast.type === 'success' && "border-l-green-400 bg-green-900/20",
+            toast.type === 'error' && "border-l-red-400 bg-red-900/20", 
+            toast.type === 'warning' && "border-l-yellow-400 bg-yellow-900/20"
           )}>
             <div class="flex items-center gap-3">
               <div class={cn(
@@ -568,7 +653,7 @@
                   <AlertCircle class="h-5 w-5 text-yellow-400" />
                 {/if}
               </div>
-              <span class="text-sm font-medium">{toast.message}</span>
+              <span class="text-sm font-medium" style="color: var(--text-primary);">{toast.message}</span>
             </div>
           </div>
         {/each}
@@ -585,8 +670,8 @@
           <Sparkles class="h-8 w-8" />
         </div>
       </div>
-      <p class="mt-4 text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-        Advanced linguistic analysis powered by machine learning algorithms
+      <p class="mt-4 text-xl max-w-3xl mx-auto leading-relaxed" style="color: var(--text-secondary);">
+        Generating word lists by analyzing advanced dispersion patterns in text files.
       </p>
       <div class="mt-8 flex justify-center gap-8 text-sm">
         {#each [
@@ -596,7 +681,7 @@
         ] as feature}
           <div class="flex items-center gap-2 glass-card px-4 py-2 rounded-full">
             <svelte:component this={feature.icon} class="h-4 w-4 {feature.color}" />
-            <span class="text-gray-300 font-medium">{feature.label}</span>
+            <span class="font-medium" style="color: var(--text-secondary);">{feature.label}</span>
           </div>
         {/each}
       </div>
@@ -607,8 +692,8 @@
       <div class="space-y-10">
         <!-- Progress Header -->
         <div class="text-center space-y-4">
-          <h2 class="text-3xl font-bold text-white">Get Started</h2>
-          <p class="text-gray-400">Three simple steps to unlock linguistic insights</p>
+          <h2 class="text-3xl font-bold" style="color: var(--text-primary);">Get Started</h2>
+          <p style="color: var(--text-muted);">Three simple steps to unlock linguistic insights</p>
           
           <!-- Enhanced Progress Bar -->
           <div class="relative w-full max-w-2xl mx-auto">
@@ -620,7 +705,7 @@
                 <div class="absolute inset-0 animate-shimmer"></div>
               </div>
             </div>
-            <div class="flex justify-between text-xs text-gray-500 mt-2">
+            <div class="flex justify-between text-xs mt-2" style="color: var(--text-muted);">
               <span>Select Files</span>
               <span>Load Models</span>
               <span>Analyze</span>
@@ -646,7 +731,7 @@
             { 
               step: 2, 
               title: 'Load Models', 
-              desc: 'Initialize advanced NLP models', 
+              desc: 'Initialize NLP models', 
               icon: Settings, 
               action: loadModel, 
               disabled: $analyzing || $modelLoaded || $filePaths.length === 0, 
@@ -721,8 +806,8 @@
                 
                 <!-- Step Info -->
                 <div class="space-y-3">
-                  <h3 class="text-xl font-bold text-white">{step.title}</h3>
-                  <p class="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
+                  <h3 class="text-xl font-bold" style="color: var(--text-primary);">{step.title}</h3>
+                  <p class="text-sm leading-relaxed" style="color: var(--text-muted);">{step.desc}</p>
                   
                   <!-- Status Indicators -->
                   {#if step.step === 1 && $filePaths.length > 0}
@@ -785,13 +870,13 @@
               <Loader2 class="h-8 w-8 text-blue-400 animate-spin" />
               <div class="absolute inset-0 bg-blue-400/20 rounded-full animate-ping"></div>
             </div>
-            <h2 class="text-2xl font-bold text-white">Analysis in Progress</h2>
+            <h2 class="text-2xl font-bold" style="color: var(--text-primary);">Analysis in Progress</h2>
           </div>
           
           <div class="max-w-2xl mx-auto space-y-4">
             <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-400">Processing files...</span>
-              <span class="text-white font-medium">{$progress.current} / {$progress.total}</span>
+              <span style="color: var(--text-muted);">Processing files...</span>
+              <span class="font-medium" style="color: var(--text-primary);">{$progress.current} / {$progress.total}</span>
             </div>
             
             <div class="relative h-3 bg-gray-800 rounded-full overflow-hidden">
@@ -805,8 +890,8 @@
             
             {#if $progress.file}
               <div class="text-center">
-                <p class="text-gray-400 text-sm">Currently processing:</p>
-                <p class="text-white font-medium truncate max-w-md mx-auto">{$progress.file}</p>
+                <p class="text-sm" style="color: var(--text-muted);">Currently processing:</p>
+                <p class="font-medium truncate max-w-md mx-auto" style="color: var(--text-primary);">{$progress.file}</p>
               </div>
             {/if}
           </div>
@@ -821,8 +906,8 @@
         <div class="glass-card rounded-3xl p-8">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h2 class="text-3xl font-bold text-white mb-2">Analysis Results</h2>
-              <p class="text-gray-400">Comprehensive linguistic analysis completed</p>
+              <h2 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Analysis Results</h2>
+              <p style="color: var(--text-muted);">Comprehensive linguistic analysis completed</p>
             </div>
             
             <!-- Statistics Cards -->
@@ -837,8 +922,8 @@
                   <div class={`inline-flex p-2 rounded-lg bg-${stat.color}-500/20 mb-2`}>
                     <svelte:component this={stat.icon} class={`h-5 w-5 text-${stat.color}-400`} />
                   </div>
-                  <div class="text-2xl font-bold text-white">{stat.value.toLocaleString()}</div>
-                  <div class="text-xs text-gray-400">{stat.label}</div>
+                  <div class="text-2xl font-bold" style="color: var(--text-primary);">{stat.value.toLocaleString()}</div>
+                  <div class="text-xs" style="color: var(--text-muted);">{stat.label}</div>
                 </div>
               {/each}
             </div>
@@ -847,169 +932,316 @@
 
         <!-- Filters Section -->
         <div class="glass-card rounded-3xl p-8">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
-            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <h3 class="text-xl font-bold flex items-center gap-2" style="color: var(--text-primary);">
               <Filter class="h-5 w-5 text-blue-400" />
               Advanced Filters
             </h3>
             <div class="flex gap-3">
               <Button
                 on:click={clearFilters}
-                class="glass-button text-white px-4 py-2 rounded-lg hover:bg-red-500/20"
+                class="glass-button text-red-400 px-4 py-2 rounded-lg hover:bg-red-500/20 transition-all duration-300"
               >
                 <X class="h-4 w-4 mr-2" />
                 Clear All
               </Button>
               <Button
                 on:click={downloadCSV}
-                class="glass-button text-white px-4 py-2 rounded-lg hover:bg-green-500/20"
+                class="glass-button text-green-400 px-4 py-2 rounded-lg hover:bg-green-500/20 transition-all duration-300"
               >
                 <Download class="h-4 w-4 mr-2" />
-                Export CSV
+                Export CSV ({$filteredResult.length})
               </Button>
             </div>
           </div>
           
-          <!-- Filter Controls -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Filter Controls - Improved Layout -->
+          <div class="space-y-8">
+            
             <!-- Word Length Filter -->
-            <div class="space-y-3">
-              <label for="word-length-min" class="block text-sm font-medium text-gray-300">Word Length</label>
-              <div class="flex gap-2">
-                <input
-                  id="word-length-min"
-                  type="number"
-                  placeholder="Min"
-                  bind:value={$filterConfig.wordLength.min}
-                  on:input={() => currentPage.set(1)}
-                  class="flex-1 bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
-                />
-                <input
-                  id="word-length-max"
-                  type="number"
-                  placeholder="Max"
-                  bind:value={$filterConfig.wordLength.max}
-                  on:input={() => currentPage.set(1)}
-                  class="flex-1 bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
-                />
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                <span class="w-2 h-2 bg-blue-400 rounded-full"></span>
+                Word Length Range
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                <div>
+                  <label for="word-length-min" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Minimum Length</label>
+                  <input
+                    id="word-length-min"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 2"
+                    bind:value={$filterConfig.wordLength.min}
+                    on:input={() => currentPage.set(1)}
+                    class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+                    style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                  />
+                </div>
+                <div>
+                  <label for="word-length-max" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Maximum Length</label>
+                  <input
+                    id="word-length-max"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 10"
+                    bind:value={$filterConfig.wordLength.max}
+                    on:input={() => currentPage.set(1)}
+                    class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200"
+                    style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                  />
+                </div>
               </div>
             </div>
             
-            <!-- POS Include Filter -->
-            <div class="space-y-3">
-              <label for="include-pos-select" class="block text-sm font-medium text-gray-300">Include POS Tags</label>
-              <select
-                id="include-pos-select"
-                multiple
-                bind:value={$filterConfig.pos.include}
-                on:change={() => currentPage.set(1)}
-                class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400 custom-scrollbar"
-                size="3"
-              >
-                {#each $uniquePOS as pos}
-                  <option value={pos} class="py-1">{pos}</option>
-                {/each}
-              </select>
+            <!-- POS Filter - Improved with Tag-based UI -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+                Part-of-Speech Tags
+              </h4>
+              
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Include POS -->
+                <div class="space-y-3">
+                  <div class="block text-sm font-medium" style="color: var(--text-secondary);">
+                    Include Only These Tags
+                    <span class="text-xs opacity-75">(leave empty to include all)</span>
+                  </div>
+                  <!-- Search box for POS include -->
+                  <div class="relative">
+                    <input
+                      type="text"
+                      bind:value={$posSearchInclude}
+                      placeholder="Search POS tags..."
+                      class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                      style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                    />
+                    {#if $posSearchInclude}
+                      <button
+                        on:click={() => posSearchInclude.set('')}
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                        title="Clear search"
+                      >
+                        <X class="h-5 w-5" />
+                      </button>
+                    {/if}
+                  </div>
+                  <div class="min-h-[120px] max-h-40 overflow-y-auto p-4 rounded-lg border custom-scrollbar" 
+                       style="background: var(--glass-bg); border-color: var(--border-color);">
+                    <div class="flex flex-wrap gap-2">
+                      {#each $filteredPOSInclude as pos}
+                        <button
+                          class={cn(
+                            "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border",
+                            $filterConfig.pos.include.includes(pos)
+                              ? "bg-green-500/20 text-green-300 border-green-400/50 shadow-sm"
+                              : "bg-gray-700/30 text-gray-400 border-gray-600/50 hover:bg-gray-600/30 hover:text-gray-300"
+                          )}
+                          on:click={() => {
+                            const currentInclude = $filterConfig.pos.include;
+                            if (currentInclude.includes(pos)) {
+                              filterConfig.update(cfg => ({
+                                ...cfg,
+                                pos: { ...cfg.pos, include: currentInclude.filter(p => p !== pos) }
+                              }));
+                            } else {
+                              filterConfig.update(cfg => ({
+                                ...cfg,
+                                pos: { ...cfg.pos, include: [...currentInclude, pos] }
+                              }));
+                            }
+                            currentPage.set(1);
+                          }}
+                        >
+                          {pos}
+                          {#if $filterConfig.pos.include.includes(pos)}
+                            <CheckCircle class="h-3 w-3 ml-1 inline" />
+                          {/if}
+                        </button>
+                      {/each}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Exclude POS -->
+                <div class="space-y-3">
+                  <div class="block text-sm font-medium" style="color: var(--text-secondary);">
+                    Exclude These Tags
+                    <span class="text-xs opacity-75">(click to exclude)</span>
+                  </div>
+                  <!-- Search box for POS exclude -->
+                  <div class="relative">
+                    <input
+                      type="text"
+                      bind:value={$posSearchExclude}
+                      placeholder="Search POS tags..."
+                      class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                      style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                    />
+                    {#if $posSearchExclude}
+                      <button
+                        on:click={() => posSearchExclude.set('')}
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                        title="Clear search"
+                      >
+                        <X class="h-5 w-5" />
+                      </button>
+                    {/if}
+                  </div>
+                  <div class="min-h-[120px] max-h-40 overflow-y-auto p-4 rounded-lg border custom-scrollbar" 
+                       style="background: var(--glass-bg); border-color: var(--border-color);">
+                    <div class="flex flex-wrap gap-2">
+                      {#each $filteredPOSExclude as pos}
+                        <button
+                          class={cn(
+                            "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border",
+                            $filterConfig.pos.exclude.includes(pos)
+                              ? "bg-red-500/20 text-red-300 border-red-400/50 shadow-sm"
+                              : "bg-gray-700/30 text-gray-400 border-gray-600/50 hover:bg-gray-600/30 hover:text-gray-300"
+                          )}
+                          on:click={() => {
+                            const currentExclude = $filterConfig.pos.exclude;
+                            if (currentExclude.includes(pos)) {
+                              filterConfig.update(cfg => ({
+                                ...cfg,
+                                pos: { ...cfg.pos, exclude: currentExclude.filter(p => p !== pos) }
+                              }));
+                            } else {
+                              filterConfig.update(cfg => ({
+                                ...cfg,
+                                pos: { ...cfg.pos, exclude: [...currentExclude, pos] }
+                              }));
+                            }
+                            currentPage.set(1);
+                          }}
+                        >
+                          {pos}
+                          {#if $filterConfig.pos.exclude.includes(pos)}
+                            <X class="h-3 w-3 ml-1 inline" />
+                          {/if}
+                        </button>
+                      {/each}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <!-- POS Exclude Filter -->
-            <div class="space-y-3">
-              <label for="exclude-pos-select" class="block text-sm font-medium text-gray-300">Exclude POS Tags</label>
-              <select
-                id="exclude-pos-select"
-                multiple
-                bind:value={$filterConfig.pos.exclude}
-                on:change={() => currentPage.set(1)}
-                class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400 custom-scrollbar"
-                size="3"
-              >
-                {#each $uniquePOS as pos}
-                  <option value={pos} class="py-1">{pos}</option>
-                {/each}
-              </select>
-            </div>
-          </div>
-          
-          <!-- Metric Filters -->
-          <div class="mt-6 space-y-4">
-            <div class="flex items-center justify-between">
-              <label for="add-metric-filter-btn" class="block text-sm font-medium text-gray-300">Metric Filters</label>
-              <Button
-                id="add-metric-filter-btn"
-                on:click={addMetricFilter}
-                class="glass-button text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-500/20"
-              >
-                Add Filter
-              </Button>
-            </div>
-            
-            {#each $filterConfig.metrics as filter, index}
-              <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 p-4 bg-gray-800/30 rounded-lg">
-                <select
-                  bind:value={filter.metric}
-                  on:change={(e) => updateMetricFilter(index, 'metric', e.target.value)}
-                  class="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400"
-                >
-                  <option value="">Select Metric</option>
-                  {#each $metricColumns as col}
-                    <option value={col}>{col}</option>
-                  {/each}
-                </select>
-                
-                <select
-                  bind:value={filter.operator}
-                  on:change={(e) => updateMetricFilter(index, 'operator', e.target.value)}
-                  class="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400"
-                >
-                  <option value="gt">Greater than</option>
-                  <option value="lt">Less than</option>
-                  <option value="gte">Greater or equal</option>
-                  <option value="lte">Less or equal</option>
-                  <option value="eq">Equal to</option>
-                </select>
-                
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="Value"
-                  bind:value={filter.value}
-                  on:input={(e) => updateMetricFilter(index, 'value', e.target.value)}
-                  class="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400"
-                />
-                
+            <!-- Metric Filters -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-lg font-semibold flex items-center gap-2" style="color: var(--text-primary);">
+                  <span class="w-2 h-2 bg-orange-400 rounded-full"></span>
+                  Metric Filters
+                </h4>
                 <Button
-                  on:click={() => removeMetricFilter(index)}
-                  class="glass-button text-red-400 px-3 py-2 rounded-lg hover:bg-red-500/20"
+                  on:click={addMetricFilter}
+                  class="glass-button text-blue-400 px-4 py-2 rounded-lg text-sm hover:bg-blue-500/20 transition-all duration-300"
                 >
-                  <X class="h-4 w-4" />
+                  <span class="mr-2">+</span>
+                  Add Filter
                 </Button>
               </div>
-            {/each}
+              
+              {#if $filterConfig.metrics.length === 0}
+                <div class="text-center py-8 rounded-lg border border-dashed" style="border-color: var(--border-color);">
+                  <SlidersHorizontal class="h-8 w-8 mx-auto mb-2 opacity-50" style="color: var(--text-muted);" />
+                  <p class="text-sm" style="color: var(--text-muted);">No metric filters added yet</p>
+                  <p class="text-xs mt-1" style="color: var(--text-muted);">Click "Add Filter" to start filtering by metrics</p>
+                </div>
+              {:else}
+                <div class="space-y-4">
+                  {#each $filterConfig.metrics as filter, index}
+                    <div class="p-6 rounded-xl border" style="background: var(--glass-bg); border-color: var(--border-color);">
+                      <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-medium" style="color: var(--text-secondary);">Filter #{index + 1}</span>
+                        <Button
+                          on:click={() => removeMetricFilter(index)}
+                          class="glass-button text-red-400 p-2 rounded-lg hover:bg-red-500/20 transition-all duration-300"
+                        >
+                          <X class="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label for={`metric-select-${index}`} class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Metric</label>
+                          <select
+                            id={`metric-select-${index}`}
+                            bind:value={filter.metric}
+                            on:change={(e) => updateMetricFilter(index, 'metric', (e.target as HTMLSelectElement).value)}
+                            class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                            style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                          >
+                            <option value="">Select a metric...</option>
+                            {#each $metricColumns as col}
+                              <option value={col}>{col}</option>
+                            {/each}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label for={`condition-select-${index}`} class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Condition</label>
+                          <select
+                            id={`condition-select-${index}`}
+                            bind:value={filter.operator}
+                            on:change={(e) => updateMetricFilter(index, 'operator', (e.target as HTMLSelectElement).value)}
+                            class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                            style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                          >
+                            <option value="gt">Greater than (&gt;)</option>
+                            <option value="gte">Greater or equal (≥)</option>
+                            <option value="lt">Less than (&lt;)</option>
+                            <option value="lte">Less or equal (≤)</option>
+                            <option value="eq">Equal to (=)</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label for={`value-input-${index}`} class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Value</label>
+                          <input
+                            id={`value-input-${index}`}
+                            type="number"
+                            step="any"
+                            placeholder="Enter number..."
+                            bind:value={filter.value}
+                            on:input={(e) => updateMetricFilter(index, 'value', (e.target as HTMLInputElement).value)}
+                            class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                            style="background: var(--glass-bg); color: var(--text-primary); border-color: var(--border-color);"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
           </div>
         </div>
 
         <!-- Results Table -->
         <div class="glass-card rounded-3xl overflow-hidden">
-          <div class="p-6 border-b border-gray-700/50">
-            <h3 class="text-xl font-bold text-white">Word Analysis Data</h3>
-            <p class="text-gray-400 text-sm mt-1">
+          <div class="p-6 border-b" style="border-color: var(--border-color);">
+            <h3 class="text-xl font-bold" style="color: var(--text-primary);">Word Analysis Data</h3>
+            <p class="text-sm mt-1" style="color: var(--text-secondary);">
               Showing {($currentPage - 1) * itemsPerPage + 1} - {Math.min($currentPage * itemsPerPage, $filteredResult.length)} of {$filteredResult.length} results
             </p>
           </div>
           
           <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full">
-              <thead class="bg-gray-800/50">
+              <thead style="background: var(--glass-bg);">
                 <tr>
                   {#each [
                     { key: 'word', label: 'Word' },
                     { key: 'pos', label: 'POS' },
                     ...$metricColumns.map(col => ({ key: col, label: col.replace(/\./g, ' ').replace(/([A-Z])/g, ' $1').trim() }))
                   ] as column}
-                    <th class="text-left p-4 text-gray-300 font-semibold">
+                    <th class="text-left p-4 font-semibold" style="color: var(--text-secondary);">
                       <button
                         on:click={() => handleSort(column.key)}
                         class="flex items-center gap-2 hover:text-white transition-colors group w-full text-left"
+                        style="color: var(--text-secondary);"
                       >
                         <span class="truncate">{column.label}</span>
                         <div class="flex flex-col">
@@ -1032,21 +1264,21 @@
               </thead>
               <tbody>
                 {#each $finalPaginatedResult as item, index}
-                  <tr class="table-row border-b border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-500/5 hover:to-purple-500/5">
-                    <td class="p-4 text-white font-medium">{item.word}</td>
+                  <tr class="table-row border-b transition-all duration-200" style="border-color: var(--border-color);">
+                    <td class="p-4 font-medium" style="color: var(--text-primary);">{item.word}</td>
                     <td class="p-4">
                       <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-300 rounded-full">
                         {item.pos}
                       </span>
                     </td>
                     {#each $metricColumns as col}
-                      <td class="p-4 text-gray-300">
+                      <td class="p-4" style="color: var(--text-secondary);">
                         {#if typeof item.metrics[col] === 'number'}
                           <span class="font-mono">
                             {item.metrics[col].toFixed(4)}
                           </span>
                         {:else}
-                          <span class="text-gray-500">
+                          <span style="color: var(--text-muted);">
                             {item.metrics[col] ?? 'N/A'}
                           </span>
                         {/if}
@@ -1060,9 +1292,9 @@
           
           <!-- Pagination -->
           {#if totalPages > 1}
-            <div class="p-6 border-t border-gray-700/50">
+            <div class="p-6 border-t" style="border-color: var(--border-color);">
               <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-400">
+                <div class="text-sm" style="color: var(--text-muted);">
                   Page {$currentPage} of {totalPages}
                 </div>
                 
@@ -1070,7 +1302,8 @@
                   <Button
                     on:click={() => goToPage(Math.max(1, $currentPage - 1))}
                     disabled={$currentPage === 1}
-                    class="glass-button text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                    class="glass-button px-3 py-2 rounded-lg disabled:opacity-50 transition-all duration-300"
+                    style="color: var(--text-primary);"
                   >
                     <ChevronUp class="h-4 w-4 rotate-[-90deg]" />
                   </Button>
@@ -1082,11 +1315,12 @@
                     <Button
                       on:click={() => goToPage(page)}
                       class={cn(
-                        "px-3 py-2 rounded-lg font-medium transition-all",
+                        "px-3 py-2 rounded-lg font-medium transition-all duration-300",
                         page === $currentPage 
                           ? "bg-blue-500 text-white shadow-lg" 
-                          : "glass-button text-gray-300 hover:text-white"
+                          : "glass-button hover:scale-105"
                       )}
+                      style={page !== $currentPage ? "color: var(--text-secondary);" : ""}
                     >
                       {page}
                     </Button>
@@ -1095,7 +1329,8 @@
                   <Button
                     on:click={() => goToPage(Math.min(totalPages, $currentPage + 1))}
                     disabled={$currentPage === totalPages}
-                    class="glass-button text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                    class="glass-button px-3 py-2 rounded-lg disabled:opacity-50 transition-all duration-300"
+                    style="color: var(--text-primary);"
                   >
                     <ChevronUp class="h-4 w-4 rotate-90" />
                   </Button>
@@ -1112,11 +1347,11 @@
       <div class="glass-card rounded-2xl p-8 max-w-2xl mx-auto">
         <div class="flex items-center justify-center gap-3 mb-4">
           <Brain class="h-6 w-6 text-blue-400" />
-          <h3 class="text-xl font-bold text-white">Advanced Linguistic Analysis</h3>
+          <h3 class="text-xl font-bold" style="color: var(--text-primary);">Advanced Dispersion Analysis</h3>
         </div>
-        <p class="text-gray-400 leading-relaxed">
+        <p class="leading-relaxed" style="color: var(--text-secondary);">
           Powered by state-of-the-art machine learning models for Chinese word segmentation, 
-          part-of-speech tagging, and comprehensive statistical analysis. 
+          part-of-speech tagging, and comprehensive dispersion analysis. 
           Built with Tauri, Svelte, and Rust for optimal performance.
         </p>
         <div class="mt-6 flex justify-center gap-6 text-sm">
@@ -1125,7 +1360,7 @@
             { label: 'Accurate Results', icon: CheckCircle },
             { label: 'Export Ready', icon: Download }
           ] as feature}
-            <div class="flex items-center gap-2 text-gray-400">
+            <div class="flex items-center gap-2" style="color: var(--text-muted);">
               <svelte:component this={feature.icon} class="h-4 w-4 text-blue-400" />
               <span>{feature.label}</span>
             </div>
