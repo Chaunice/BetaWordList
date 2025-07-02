@@ -671,7 +671,7 @@
         </div>
       </div>
       <p class="mt-4 text-xl max-w-3xl mx-auto leading-relaxed" style="color: var(--text-secondary);">
-        Generating word lists by analyzing advanced dispersion patterns in text files.
+        Generating word lists with advanced dispersion analysis across text files.
       </p>
       <div class="mt-8 flex justify-center gap-8 text-sm">
         {#each [
