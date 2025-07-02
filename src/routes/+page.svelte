@@ -5,7 +5,7 @@
   import { cn } from "$lib/utils.js";
   import Button from "$lib/components/ui/Button.svelte";
   import Card from "$lib/components/ui/Card.svelte";
-  import { FileText, Play, Settings, CheckCircle, AlertCircle, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Download, Filter, X } from 'lucide-svelte';
+  import { File, Play, Settings, CheckCircle, AlertCircle, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Download, SlidersHorizontal, X, Sparkles, Brain, Zap, Filter } from 'lucide-svelte';
 
   // Stores
   const filePaths = writable<string[]>([]);
@@ -297,501 +297,758 @@
 </script>
 
 <style>
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  
+  :root {
+    --primary-50: #f0f9ff;
+    --primary-100: #e0f2fe;
+    --primary-200: #bae6fd;
+    --primary-300: #7dd3fc;
+    --primary-400: #38bdf8;
+    --primary-500: #0ea5e9;
+    --primary-600: #0284c7;
+    --primary-700: #0369a1;
+    --primary-800: #075985;
+    --primary-900: #0c4a6e;
+    
+    --secondary-50: #fafaf9;
+    --secondary-100: #f5f5f4;
+    --secondary-200: #e7e5e4;
+    --secondary-300: #d6d3d1;
+    --secondary-400: #a8a29e;
+    --secondary-500: #78716c;
+    --secondary-600: #57534e;
+    --secondary-700: #44403c;
+    --secondary-800: #292524;
+    --secondary-900: #1c1917;
+    
+    --success-500: #10b981;
+    --success-600: #059669;
+    --warning-500: #f59e0b;
+    --warning-600: #d97706;
+    --error-500: #ef4444;
+    --error-600: #dc2626;
+    
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  * {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(56, 189, 248, 0.6); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(50px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-  .animate-slide-in { animation: slideIn 0.3s ease-out; }
-  .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); }
-  .active-scale:active { transform: scale(0.95); }
 
-  /* 自定义动画 */
-  @keyframes bounce-in {
-    0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.05); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes slide-up {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .animate-bounce-in {
-    animation: bounce-in 0.6s ease-out;
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
   }
 
   .animate-slide-up {
-    animation: slide-up 0.5s ease-out;
+    animation: slideUp 0.6s ease-out;
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.4s ease-out forwards;
-    opacity: 0;
+  .animate-slide-down {
+    animation: slideDown 0.4s ease-out;
   }
 
-  .pulse {
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out;
+  }
+
+  .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  /* 自定义滚动条 */
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-button {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .step-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .step-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .step-card:hover::before {
+    left: 100%;
+  }
+
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgb(34 197 94) rgb(243 244 246);
+    scrollbar-color: var(--primary-500) var(--secondary-200);
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
+    height: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgb(243 244 246);
-    border-radius: 3px;
+    background: var(--secondary-100);
+    border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgb(34 197 94);
-    border-radius: 3px;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgb(22 163 74);
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  }
+
+  .table-row {
+    transition: all 0.2s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.05), rgba(147, 51, 234, 0.05));
+    transform: translateX(4px);
+  }
+
+  .floating-element {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.1;
+  }
+
+  .floating-circle {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, var(--primary-400), transparent);
+    border-radius: 50%;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .floating-square {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(45deg, var(--primary-500), var(--secondary-500));
+    transform: rotate(45deg);
+    animation: float 10s ease-in-out infinite reverse;
+  }
+
+  .stats-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
 </style>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-blue-950 p-6 space-y-8">
-  <!-- Toast Notifications -->
-  {#if $toasts.length > 0}
-    <div class="fixed top-6 right-6 z-50 space-y-3">
-      {#each $toasts as toast (toast.id)}
-        <div class={cn(
-          "animate-slide-in rounded-xl p-4 shadow-lg border transition-all duration-300",
-          toast.type === 'success' && "bg-green-100 border-green-300 text-green-800",
-          toast.type === 'error' && "bg-red-100 border-red-300 text-red-800",
-          toast.type === 'warning' && "bg-yellow-100 border-yellow-300 text-yellow-800"
-        )}>
-          <div class="flex items-center gap-2">
-            {#if toast.type === 'success'}
-              <CheckCircle class="h-5 w-5" />
-            {:else if toast.type === 'error'}
-              <AlertCircle class="h-5 w-5" />
-            {:else}
-              <AlertCircle class="h-5 w-5" />
-            {/if}
-            <span class="text-sm font-medium">{toast.message}</span>
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
-
-  <!-- Header -->
-  <div class="text-center py-10 animate-fade-in">
-    <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-      Word List Generator
-    </h1>
-    <p class="mt-2 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-      Analyze word distribution in text files with advanced dispersion metrics.
-    </p>
-    <div class="mt-4 flex justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-      <span class="flex items-center gap-2"><span class="w-2 h-2 bg-green-500 rounded-full"></span> ML Powered</span>
-      <span class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full"></span> Real-time</span>
-      <span class="flex items-center gap-2"><span class="w-2 h-2 bg-purple-500 rounded-full"></span> Exportable</span>
-    </div>
-  </div>
-
-  <!-- Operation Card -->
-  <Card class="p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-xl hover-lift transition-all duration-300">
-    <div class="space-y-8">
-      <div class="text-center">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Get Started</h2>
-        <p class="text-gray-600 dark:text-gray-400">Three simple steps to analyze your files</p>
-      </div>
-      
-      <!-- Progress Bar -->
-      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-8">
-        <div 
-          class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-700 ease-out"
-          style="width: {getProgressWidth()}%"
-        ></div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {#each [
-          { 
-            step: 1, 
-            title: 'Select Files', 
-            desc: 'Choose text files', 
-            icon: FileText, 
-            action: selectFiles, 
-            disabled: $analyzing, 
-            isCompleted: $filePaths.length > 0,
-            isActive: !$filePaths.length && !$analyzing,
-            isProcessing: false
-          },
-          { 
-            step: 2, 
-            title: 'Load Models', 
-            desc: 'Initialize NLP models', 
-            icon: Settings, 
-            action: loadModel, 
-            disabled: $analyzing || $modelLoaded || $filePaths.length === 0, 
-            isCompleted: $modelLoaded,
-            isActive: $filePaths.length > 0 && !$modelLoaded && !$analyzing,
-            isProcessing: $modelStatus && !$modelLoaded
-          },
-          { 
-            step: 3, 
-            title: 'Start Analysis', 
-            desc: 'Process and extract insights', 
-            icon: Play, 
-            action: analyze, 
-            disabled: $analyzing || $filePaths.length === 0 || !$modelLoaded, 
-            isCompleted: $result.length > 0,
-            isActive: $modelLoaded && $result.length === 0 && !$analyzing,
-            isProcessing: $analyzing
-          }
-        ] as step}
+<div class="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+  <!-- Floating Background Elements -->
+  <div class="floating-element floating-circle top-20 left-10 animate-float"></div>
+  <div class="floating-element floating-square top-40 right-20" style="animation-delay: -2s;"></div>
+  <div class="floating-element floating-circle bottom-20 right-10" style="animation-delay: -4s;"></div>
+  
+  <!-- Gradient Overlay -->
+  <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10"></div>
+  
+  <div class="relative z-10 p-6 space-y-8">
+    <!-- Toast Notifications -->
+    {#if $toasts.length > 0}
+      <div class="fixed top-6 right-6 z-50 space-y-3">
+        {#each $toasts as toast (toast.id)}
           <div class={cn(
-            "relative p-6 rounded-xl border-2 transition-all duration-500 ease-out transform",
-            "hover:scale-105 hover:shadow-lg",
-            step.isCompleted 
-              ? "border-green-300 bg-gradient-to-br from-green-50 to-green-100 dark:border-green-600 dark:from-green-900/20 dark:to-green-800/30 shadow-green-100 dark:shadow-green-900/20" 
-              : step.isActive 
-                ? "border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-600 dark:from-blue-900/20 dark:to-blue-800/30 shadow-blue-100 dark:shadow-blue-900/20 ring-2 ring-blue-200 dark:ring-blue-700" 
-                : step.isProcessing
-                  ? "border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100 dark:border-amber-600 dark:from-amber-900/20 dark:to-amber-800/30 shadow-amber-100 dark:shadow-amber-900/20"
-                  : "border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 dark:border-gray-600 dark:from-gray-700/30 dark:to-gray-600/30"
+            "animate-slide-down glass-card rounded-2xl p-4 border-l-4 transition-all duration-300",
+            toast.type === 'success' && "border-l-green-400 bg-green-900/20 text-green-100",
+            toast.type === 'error' && "border-l-red-400 bg-red-900/20 text-red-100",
+            toast.type === 'warning' && "border-l-yellow-400 bg-yellow-900/20 text-yellow-100"
           )}>
-            
-            <!-- Step Content -->
-            <div class="flex flex-col items-center text-center space-y-4">
-              
-              <!-- Icon/Progress Circle -->
-              <div class="relative">
-                <div class={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-500 ease-out",
-                  step.isCompleted 
-                    ? "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg transform scale-110" 
-                    : step.isProcessing
-                      ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg"
-                      : step.isActive 
-                        ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg pulse" 
-                        : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
-                )}>
-                  {#if step.isCompleted}
-                    <CheckCircle class="h-7 w-7 animate-bounce-in" />
-                  {:else if step.isProcessing}
-                    <Loader2 class="h-7 w-7 animate-spin" />
-                  {:else}
-                    <svelte:component this={step.icon} class="h-7 w-7" />
-                  {/if}
-                </div>
-                
-                <!-- Processing Ring -->
-                {#if step.isProcessing}
-                  <div class="absolute inset-0 rounded-full border-4 border-t-transparent border-amber-300 animate-spin"></div>
-                {/if}
-                
-                <!-- Active Pulse Ring -->
-                {#if step.isActive && !step.isProcessing}
-                  <div class="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping opacity-75"></div>
-                {/if}
-              </div>
-              
-              <!-- Title and Description -->
-              <div class="space-y-2">
-                <h3 class={cn(
-                  "font-semibold text-lg transition-colors duration-300",
-                  step.isCompleted ? "text-green-800 dark:text-green-200" 
-                  : step.isActive ? "text-blue-800 dark:text-blue-200"
-                  : step.isProcessing ? "text-amber-800 dark:text-amber-200"
-                  : "text-gray-800 dark:text-gray-100"
-                )}>{step.title}</h3>
-                <p class={cn(
-                  "text-sm transition-colors duration-300",
-                  step.isCompleted ? "text-green-600 dark:text-green-400" 
-                  : step.isActive ? "text-blue-600 dark:text-blue-400"
-                  : step.isProcessing ? "text-amber-600 dark:text-amber-400"
-                  : "text-gray-600 dark:text-gray-400"
-                )}>{step.desc}</p>
-              </div>
-              
-              <!-- Action Button -->
-              <Button 
-                on:click={step.action} 
-                disabled={step.disabled}
-                class={cn(
-                  "w-full transition-all duration-300 transform hover:scale-105 active:scale-95",
-                  step.isCompleted && "bg-green-600 hover:bg-green-700 shadow-lg",
-                  step.isActive && "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg",
-                  step.isProcessing && "bg-amber-500 hover:bg-amber-600"
-                )}
-                variant={step.isCompleted || step.isActive ? "default" : "outline"}
-              >
-                <div class="flex items-center justify-center space-x-2">
-                  {#if step.isProcessing}
-                    <Loader2 class="h-4 w-4 animate-spin" />
-                  {:else}
-                    <svelte:component this={step.icon} class="h-4 w-4" />
-                  {/if}
-                  <span>
-                    {#if step.step === 1}
-                      {step.isCompleted ? `${$filePaths.length} File${$filePaths.length > 1 ? 's' : ''} Selected` : 'Select Files'}
-                    {:else if step.step === 2}
-                      {#if step.isProcessing}
-                        {$modelStatus || 'Loading...'}
-                      {:else}
-                        {step.isCompleted ? 'Models Ready' : 'Load Models'}
-                      {/if}
-                    {:else}
-                      {#if step.isProcessing}
-                        Analyzing...
-                      {:else}
-                        {step.isCompleted ? 'Analysis Complete' : 'Start Analysis'}
-                      {/if}
-                    {/if}
-                  </span>
-                </div>
-              </Button>
-            </div>
-            
-            <!-- Completion Badge -->
-            {#if step.isCompleted}
-              <div class="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg animate-bounce-in">
-                <CheckCircle class="h-5 w-5 text-white" />
-              </div>
-            {/if}
-            
-            <!-- Connection Line to Next Step -->
-            {#if step.step < 3}
+            <div class="flex items-center gap-3">
               <div class={cn(
-                "hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 transition-all duration-500",
-                step.isCompleted ? "bg-green-400" : step.isActive ? "bg-blue-400" : "bg-gray-300"
-              )}></div>
-            {/if}
+                "p-1 rounded-full",
+                toast.type === 'success' && "bg-green-500/20",
+                toast.type === 'error' && "bg-red-500/20",
+                toast.type === 'warning' && "bg-yellow-500/20"
+              )}>
+                {#if toast.type === 'success'}
+                  <CheckCircle class="h-5 w-5 text-green-400" />
+                {:else if toast.type === 'error'}
+                  <AlertCircle class="h-5 w-5 text-red-400" />
+                {:else}
+                  <AlertCircle class="h-5 w-5 text-yellow-400" />
+                {/if}
+              </div>
+              <span class="text-sm font-medium">{toast.message}</span>
+            </div>
           </div>
         {/each}
       </div>
-      
-      <!-- File List -->
-      {#if $filePaths.length > 0}
-        <div class="mt-8 p-6 rounded-xl border border-green-200 bg-gradient-to-br from-green-50/50 to-green-100/30 dark:border-green-700 dark:bg-gradient-to-br dark:from-green-900/20 dark:to-green-800/10 animate-slide-up shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="font-semibold text-green-800 dark:text-green-200 flex items-center">
-              <FileText class="h-5 w-5 mr-2" /> 
-              Selected Files ({$filePaths.length})
-            </h4>
-            <div class="flex items-center space-x-2">
-              <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span class="text-xs font-medium text-green-700 bg-green-200 dark:bg-green-800 dark:text-green-200 px-3 py-1 rounded-full">
-                Ready
-              </span>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-32 overflow-y-auto custom-scrollbar">
-            {#each $filePaths as file, index}
-              <div class="flex items-center gap-3 p-3 bg-white/80 dark:bg-gray-800/60 rounded-lg border border-green-100 dark:border-green-700 hover:shadow-md transition-all duration-200 animate-fade-in"
-                  style="animation-delay: {index * 50}ms">
-                <div class="w-3 h-3 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex-shrink-0 animate-pulse"></div>
-                <span class="text-sm text-gray-700 dark:text-gray-300 truncate font-medium" title={file}>
-                  {file.split(/[\\/]/).pop()}
-                </span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
-    </div>
-  </Card>
+    {/if}
 
-  <!-- Progress Display -->
-  {#if $analyzing}
-    <Card className="p-8 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-700 rounded-xl shadow-xl animate-fade-in">
-      <div class="space-y-6 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-200 dark:bg-blue-800 rounded-full mb-4">
-          <Loader2 class="h-8 w-8 text-blue-600 dark:text-blue-300 animate-spin" />
-        </div>
-        <h2 class="text-2xl font-semibold text-blue-800 dark:text-blue-200">Processing...</h2>
-        <div class="max-w-md mx-auto space-y-4">
-          <div class="flex justify-between text-sm text-blue-700 dark:text-blue-300">
-            <span>{$progress.current}/{$progress.total}</span>
-            <span>{Math.round(($progress.current / ($progress.total || 1)) * 100)}%</span>
-          </div>
-          <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-3 overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-300" style="width: {($progress.current / ($progress.total || 1)) * 100}%"></div>
-          </div>
-          {#if $progress.file}
-            <div class="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-              <p class="text-sm text-gray-600 dark:text-gray-400">Processing:</p>
-              <p class="text-sm font-medium text-blue-700 dark:text-blue-300 truncate" title={$progress.file}>{$progress.file.split(/[\\/]/).pop()}</p>
-            </div>
-          {/if}
+    <!-- Header -->
+    <div class="text-center py-16 animate-slide-up">
+      <div class="relative inline-block">
+        <h1 class="text-7xl font-black gradient-text mb-4 animate-float">
+          Word List Generator
+        </h1>
+        <div class="absolute -top-4 -right-4 text-yellow-400 animate-pulse">
+          <Sparkles class="h-8 w-8" />
         </div>
       </div>
-    </Card>
-  {/if}
+      <p class="mt-4 text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+        Advanced linguistic analysis powered by machine learning algorithms
+      </p>
+      <div class="mt-8 flex justify-center gap-8 text-sm">
+        {#each [
+          { icon: Brain, label: 'AI Powered', color: 'text-blue-400' },
+          { icon: Zap, label: 'Real-time', color: 'text-yellow-400' },
+          { icon: Sparkles, label: 'Insights', color: 'text-purple-400' }
+        ] as feature}
+          <div class="flex items-center gap-2 glass-card px-4 py-2 rounded-full">
+            <svelte:component this={feature.icon} class="h-4 w-4 {feature.color}" />
+            <span class="text-gray-300 font-medium">{feature.label}</span>
+          </div>
+        {/each}
+      </div>
+    </div>
 
-  <!-- Results Display -->
-  {#if $result.length > 0}
-    <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-xl animate-fade-in">
-      <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-              <CheckCircle class="h-6 w-6 text-white" />
+    <!-- Main Operation Card -->
+    <div class="glass-card rounded-3xl p-8 shadow-2xl animate-scale-in">
+      <div class="space-y-10">
+        <!-- Progress Header -->
+        <div class="text-center space-y-4">
+          <h2 class="text-3xl font-bold text-white">Get Started</h2>
+          <p class="text-gray-400">Three simple steps to unlock linguistic insights</p>
+          
+          <!-- Enhanced Progress Bar -->
+          <div class="relative w-full max-w-2xl mx-auto">
+            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div 
+                class="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-1000 ease-out relative"
+                style="width: {getProgressWidth()}%"
+              >
+                <div class="absolute inset-0 animate-shimmer"></div>
+              </div>
             </div>
-            <div>
-              <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Analysis Complete</h2>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Total: {$result.length} | Filtered: {$filteredResult.length} | Page: {$finalPaginatedResult.length}
-              </p>
+            <div class="flex justify-between text-xs text-gray-500 mt-2">
+              <span>Select Files</span>
+              <span>Load Models</span>
+              <span>Analyze</span>
             </div>
           </div>
-            <Button
-            on:click={downloadCSV}
-            variant="outline"
-            disabled={$filteredResult.length === 0}
-            class="border-2 rounded-lg px-4 py-2 font-semibold text-blue-700 dark:text-blue-200 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 shadow-md hover-lift active-scale flex items-center gap-2"
-            >
-            <Download class="h-5 w-5 mr-2" />
-            Export CSV
-            </Button>
         </div>
-
-        <!-- Filters -->
-        <Card className="p-4 bg-gray-50/50 dark:bg-gray-700/50 border-2 rounded-xl">
-          <div class="space-y-4">
-            <div class="flex items-center gap-2">
-              <Filter class="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <h3 class="font-medium text-gray-800 dark:text-gray-100">Filters</h3>
-              {#if $filterConfig.wordLength.min || $filterConfig.wordLength.max || $filterConfig.pos.include.length > 0 || $filterConfig.pos.exclude.length > 0 || $filterConfig.metrics.some(m => m.metric && m.value)}
-                <Button size="sm" variant="ghost" on:click={clearFilters} class="hover:bg-gray-200 dark:hover:bg-gray-600">
-                  <X class="h-3 w-3 mr-1" /> Clear
-                </Button>
-              {/if}
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <label for="word-length-min" class="text-sm font-medium text-gray-700 dark:text-gray-300">Word Length</label>
-                <div class="flex gap-2">
-                  <input id="word-length-min" class="h-9 w-20 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm focus:ring-2 focus:ring-blue-500" type="number" min="1" placeholder="Min" bind:value={$filterConfig.wordLength.min} on:input={() => currentPage.set(1)} />
-                  <span class="self-center text-gray-600 dark:text-gray-400">~</span>
-                  <input id="word-length-max" class="h-9 w-20 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm focus:ring-2 focus:ring-blue-500" type="number" min="1" placeholder="Max" bind:value={$filterConfig.wordLength.max} on:input={() => currentPage.set(1)} />
+        
+        <!-- Step Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {#each [
+            { 
+              step: 1, 
+              title: 'Select Files', 
+              desc: 'Choose your text files for analysis', 
+              icon: File, 
+              action: selectFiles, 
+              disabled: $analyzing, 
+              isCompleted: $filePaths.length > 0,
+              isActive: !$filePaths.length && !$analyzing,
+              isProcessing: false,
+              color: 'blue'
+            },
+            { 
+              step: 2, 
+              title: 'Load Models', 
+              desc: 'Initialize advanced NLP models', 
+              icon: Settings, 
+              action: loadModel, 
+              disabled: $analyzing || $modelLoaded || $filePaths.length === 0, 
+              isCompleted: $modelLoaded,
+              isActive: $filePaths.length > 0 && !$modelLoaded && !$analyzing,
+              isProcessing: $modelStatus && !$modelLoaded,
+              color: 'purple'
+            },
+            { 
+              step: 3, 
+              title: 'Start Analysis', 
+              desc: 'Extract deep linguistic patterns', 
+              icon: Play, 
+              action: analyze, 
+              disabled: $analyzing || $filePaths.length === 0 || !$modelLoaded, 
+              isCompleted: $result.length > 0,
+              isActive: $modelLoaded && $result.length === 0 && !$analyzing,
+              isProcessing: $analyzing,
+              color: 'green'
+            }
+          ] as step, i}
+            <div 
+              class={cn(
+                "step-card relative p-8 rounded-2xl border transition-all duration-500 transform hover:scale-105",
+                step.isCompleted 
+                  ? "bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-400/50 shadow-green-500/25" 
+                  : step.isActive 
+                    ? `bg-gradient-to-br from-${step.color}-500/20 to-${step.color}-600/20 border-${step.color}-400/50 shadow-${step.color}-500/25 animate-glow` 
+                    : step.isProcessing
+                      ? "bg-gradient-to-br from-yellow-500/20 to-orange-600/20 border-yellow-400/50 shadow-yellow-500/25"
+                      : "bg-gray-800/50 border-gray-700/50"
+              )}
+              style="animation-delay: {i * 0.2}s"
+            >
+              
+              <!-- Step Content -->
+              <div class="flex flex-col items-center text-center space-y-6">
+                
+                <!-- Icon Circle -->
+                <div class="relative">
+                  <div class={cn(
+                    "w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all duration-500 relative overflow-hidden",
+                    step.isCompleted 
+                      ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-2xl" 
+                      : step.isProcessing
+                        ? "bg-gradient-to-br from-yellow-500 to-orange-500 text-white shadow-2xl"
+                        : step.isActive
+                          ? `bg-gradient-to-br from-${step.color}-500 to-${step.color}-600 text-white shadow-2xl`
+                          : "bg-gray-700 text-gray-400"
+                  )}>
+                    {#if step.isCompleted}
+                      <CheckCircle class="h-8 w-8" />
+                    {:else if step.isProcessing}
+                      <Loader2 class="h-8 w-8 animate-spin" />
+                    {:else}
+                      <svelte:component this={step.icon} class="h-8 w-8" />
+                    {/if}
+                  </div>
+                  
+                  <!-- Step Number Badge -->
+                  <div class={cn(
+                    "absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                    step.isCompleted 
+                      ? "bg-green-500 text-white" 
+                      : step.isActive 
+                        ? `bg-${step.color}-500 text-white` 
+                        : "bg-gray-600 text-gray-300"
+                  )}>
+                    {step.step}
+                  </div>
                 </div>
-              </div>
-              <div class="space-y-2">
-                <label for="pos-list" class="text-sm font-medium text-gray-700 dark:text-gray-300">Part of Speech</label>
-                <div id="pos-list" class="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-gray-800">
-                  {#each $uniquePOS as pos}
-                    <div class="flex items-center gap-2 py-1">
-                      <input type="checkbox" id={"pos-inc-" + pos} checked={$filterConfig.pos.include.includes(pos)} on:change={e => {
-                        filterConfig.update(cfg => {
-                          if (e.target.checked) cfg.pos.include = [...cfg.pos.include, pos];
-                          else cfg.pos.include = cfg.pos.include.filter(p => p !== pos);
-                          return cfg;
-                        });
-                        currentPage.set(1);
-                      }} />
-                      <label for={"pos-inc-" + pos} class="text-xs text-gray-700 dark:text-gray-300">{pos}</label>
-                      <button class="text-xs px-1 rounded bg-red-100 text-red-600 hover:bg-red-200" on:click={() => {
-                        filterConfig.update(cfg => { if (!cfg.pos.exclude.includes(pos)) cfg.pos.exclude = [...cfg.pos.exclude, pos]; return cfg; });
-                        currentPage.set(1);
-                      }}>Exclude</button>
-                      {#if $filterConfig.pos.exclude.includes(pos)}
-                        <span class="text-xs text-red-500">Excluded</span>
-                        <button class="text-xs px-1 rounded hover:bg-gray-200" on:click={() => {
-                          filterConfig.update(cfg => { cfg.pos.exclude = cfg.pos.exclude.filter(p => p !== pos); return cfg; });
-                          currentPage.set(1);
-                        }}>Cancel</button>
-                      {/if}
+                
+                <!-- Step Info -->
+                <div class="space-y-3">
+                  <h3 class="text-xl font-bold text-white">{step.title}</h3>
+                  <p class="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
+                  
+                  <!-- Status Indicators -->
+                  {#if step.step === 1 && $filePaths.length > 0}
+                    <div class="text-xs text-green-400 font-medium">
+                      {$filePaths.length} file{$filePaths.length === 1 ? '' : 's'} selected
                     </div>
-                  {/each}
+                  {/if}
+                  
+                  {#if step.step === 2 && $modelStatus}
+                    <div class="text-xs text-yellow-400 font-medium animate-pulse">
+                      {$modelStatus}
+                    </div>
+                  {/if}
+                  
+                  {#if step.step === 3 && $analyzing}
+                    <div class="text-xs text-blue-400 font-medium">
+                      Processing: {$progress.file || 'Initializing...'}
+                    </div>
+                  {/if}
                 </div>
+                
+                <!-- Action Button -->
+                <Button
+                  on:click={step.action}
+                  disabled={step.disabled}
+                  class={cn(
+                    "w-full glass-button text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300",
+                    step.isCompleted 
+                      ? "bg-green-500/80 hover:bg-green-500" 
+                      : step.isActive 
+                        ? `bg-${step.color}-500/80 hover:bg-${step.color}-500` 
+                        : "bg-gray-600/50 hover:bg-gray-600/70",
+                    (step.disabled) && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {#if step.isProcessing}
+                    <Loader2 class="h-4 w-4 animate-spin mr-2" />
+                    Processing...
+                  {:else if step.isCompleted}
+                    <CheckCircle class="h-4 w-4 mr-2" />
+                    Completed
+                  {:else}
+                    <svelte:component this={step.icon} class="h-4 w-4 mr-2" />
+                    {step.title}
+                  {/if}
+                </Button>
               </div>
             </div>
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <label for="add-metric-filter-btn" class="text-sm font-medium text-gray-700 dark:text-gray-300">Metric Filters</label>
-                <Button id="add-metric-filter-btn" size="sm" variant="outline" on:click={addMetricFilter}>+ Add</Button>
+          {/each}
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Progress Section -->
+    {#if $analyzing}
+      <div class="glass-card rounded-3xl p-8 animate-slide-up">
+        <div class="text-center space-y-6">
+          <div class="flex items-center justify-center gap-3 mb-6">
+            <div class="relative">
+              <Loader2 class="h-8 w-8 text-blue-400 animate-spin" />
+              <div class="absolute inset-0 bg-blue-400/20 rounded-full animate-ping"></div>
+            </div>
+            <h2 class="text-2xl font-bold text-white">Analysis in Progress</h2>
+          </div>
+          
+          <div class="max-w-2xl mx-auto space-y-4">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-400">Processing files...</span>
+              <span class="text-white font-medium">{$progress.current} / {$progress.total}</span>
+            </div>
+            
+            <div class="relative h-3 bg-gray-800 rounded-full overflow-hidden">
+              <div 
+                class="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
+                style="width: {$progress.total > 0 ? ($progress.current / $progress.total) * 100 : 0}%"
+              >
+                <div class="absolute inset-0 bg-white/20 animate-shimmer"></div>
               </div>
-              {#each $filterConfig.metrics as metricFilter, index}
-                <div class="flex items-center gap-2 p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
-                  <select class="h-9 w-32 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500" bind:value={metricFilter.metric} on:change={(e) => updateMetricFilter(index, 'metric', e.target.value)}>
-                    <option value="">Select Metric</option>
-                    {#each $metricColumns as metric}
-                      <option value={metric}>{metric}</option>
-                    {/each}
-                  </select>
-                  <select class="h-9 w-16 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500" bind:value={metricFilter.operator} on:change={(e) => updateMetricFilter(index, 'operator', e.target.value)} disabled={!metricFilter.metric}>
-                    <option value="gt">&gt;</option>
-                    <option value="gte">&gt;=</option>
-                    <option value="lt">&lt;</option>
-                    <option value="lte">&lt;=</option>
-                    <option value="eq">=</option>
-                  </select>
-                  <input class="h-9 w-24 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 text-sm focus:ring-2 focus:ring-blue-500" type="number" step="0.0001" placeholder="Value" bind:value={metricFilter.value} on:input={(e) => updateMetricFilter(index, 'value', e.target.value)} disabled={!metricFilter.metric} />
-                  <Button size="sm" variant="ghost" on:click={() => removeMetricFilter(index)} class="text-red-500 hover:text-red-700"><X class="h-4 w-4" /></Button>
+            </div>
+            
+            {#if $progress.file}
+              <div class="text-center">
+                <p class="text-gray-400 text-sm">Currently processing:</p>
+                <p class="text-white font-medium truncate max-w-md mx-auto">{$progress.file}</p>
+              </div>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    <!-- Results Section -->
+    {#if $result.length > 0}
+      <div class="space-y-6 animate-slide-up">
+        <!-- Results Header with Stats -->
+        <div class="glass-card rounded-3xl p-8">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h2 class="text-3xl font-bold text-white mb-2">Analysis Results</h2>
+              <p class="text-gray-400">Comprehensive linguistic analysis completed</p>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {#each [
+                { label: 'Total Words', value: $processedResult.length, icon: File, color: 'blue' },
+                { label: 'Unique POS', value: $uniquePOS.length, icon: Settings, color: 'purple' },
+                { label: 'Filtered', value: $filteredResult.length, icon: Filter, color: 'green' },
+                { label: 'Pages', value: totalPages, icon: ChevronUp, color: 'orange' }
+              ] as stat}
+                <div class="stats-card p-4 rounded-xl text-center">
+                  <div class={`inline-flex p-2 rounded-lg bg-${stat.color}-500/20 mb-2`}>
+                    <svelte:component this={stat.icon} class={`h-5 w-5 text-${stat.color}-400`} />
+                  </div>
+                  <div class="text-2xl font-bold text-white">{stat.value.toLocaleString()}</div>
+                  <div class="text-xs text-gray-400">{stat.label}</div>
                 </div>
               {/each}
             </div>
           </div>
-        </Card>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="glass-card rounded-3xl p-8">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <Filter class="h-5 w-5 text-blue-400" />
+              Advanced Filters
+            </h3>
+            <div class="flex gap-3">
+              <Button
+                on:click={clearFilters}
+                class="glass-button text-white px-4 py-2 rounded-lg hover:bg-red-500/20"
+              >
+                <X class="h-4 w-4 mr-2" />
+                Clear All
+              </Button>
+              <Button
+                on:click={downloadCSV}
+                class="glass-button text-white px-4 py-2 rounded-lg hover:bg-green-500/20"
+              >
+                <Download class="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
+          </div>
+          
+          <!-- Filter Controls -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Word Length Filter -->
+            <div class="space-y-3">
+              <label for="word-length-min" class="block text-sm font-medium text-gray-300">Word Length</label>
+              <div class="flex gap-2">
+                <input
+                  id="word-length-min"
+                  type="number"
+                  placeholder="Min"
+                  bind:value={$filterConfig.wordLength.min}
+                  on:input={() => currentPage.set(1)}
+                  class="flex-1 bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+                <input
+                  id="word-length-max"
+                  type="number"
+                  placeholder="Max"
+                  bind:value={$filterConfig.wordLength.max}
+                  on:input={() => currentPage.set(1)}
+                  class="flex-1 bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
+            </div>
+            
+            <!-- POS Include Filter -->
+            <div class="space-y-3">
+              <label for="include-pos-select" class="block text-sm font-medium text-gray-300">Include POS Tags</label>
+              <select
+                id="include-pos-select"
+                multiple
+                bind:value={$filterConfig.pos.include}
+                on:change={() => currentPage.set(1)}
+                class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400 custom-scrollbar"
+                size="3"
+              >
+                {#each $uniquePOS as pos}
+                  <option value={pos} class="py-1">{pos}</option>
+                {/each}
+              </select>
+            </div>
+            
+            <!-- POS Exclude Filter -->
+            <div class="space-y-3">
+              <label for="exclude-pos-select" class="block text-sm font-medium text-gray-300">Exclude POS Tags</label>
+              <select
+                id="exclude-pos-select"
+                multiple
+                bind:value={$filterConfig.pos.exclude}
+                on:change={() => currentPage.set(1)}
+                class="w-full bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400 focus:ring-1 focus:ring-blue-400 custom-scrollbar"
+                size="3"
+              >
+                {#each $uniquePOS as pos}
+                  <option value={pos} class="py-1">{pos}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+          
+          <!-- Metric Filters -->
+          <div class="mt-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <label for="add-metric-filter-btn" class="block text-sm font-medium text-gray-300">Metric Filters</label>
+              <Button
+                id="add-metric-filter-btn"
+                on:click={addMetricFilter}
+                class="glass-button text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-500/20"
+              >
+                Add Filter
+              </Button>
+            </div>
+            
+            {#each $filterConfig.metrics as filter, index}
+              <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 p-4 bg-gray-800/30 rounded-lg">
+                <select
+                  bind:value={filter.metric}
+                  on:change={(e) => updateMetricFilter(index, 'metric', e.target.value)}
+                  class="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400"
+                >
+                  <option value="">Select Metric</option>
+                  {#each $metricColumns as col}
+                    <option value={col}>{col}</option>
+                  {/each}
+                </select>
+                
+                <select
+                  bind:value={filter.operator}
+                  on:change={(e) => updateMetricFilter(index, 'operator', e.target.value)}
+                  class="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-400"
+                >
+                  <option value="gt">Greater than</option>
+                  <option value="lt">Less than</option>
+                  <option value="gte">Greater or equal</option>
+                  <option value="lte">Less or equal</option>
+                  <option value="eq">Equal to</option>
+                </select>
+                
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="Value"
+                  bind:value={filter.value}
+                  on:input={(e) => updateMetricFilter(index, 'value', e.target.value)}
+                  class="bg-gray-800/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-blue-400"
+                />
+                
+                <Button
+                  on:click={() => removeMetricFilter(index)}
+                  class="glass-button text-red-400 px-3 py-2 rounded-lg hover:bg-red-500/20"
+                >
+                  <X class="h-4 w-4" />
+                </Button>
+              </div>
+            {/each}
+          </div>
+        </div>
 
         <!-- Results Table -->
-        <div class="border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead class="bg-gray-100 dark:bg-gray-700">
-                <tr class="border-b border-gray-200 dark:border-gray-600">
-                  <th class="px-4 py-3 text-left font-medium sticky left-0 bg-gray-100 dark:bg-gray-700 z-10">
-                    <button class="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-600 p-1 rounded w-full text-left" on:click={() => handleSort('word')}>
-                      <span>Word</span>
-                      <span class="text-xs">{#if $sortConfig.column === 'word'}{#if $sortConfig.direction === 'asc'}↑{:else if $sortConfig.direction === 'desc'}↓{:else}↕{/if}{:else}↕{/if}</span>
-                    </button>
-                  </th>
-                  <th class="px-4 py-3 text-left font-medium sticky left-16 bg-gray-100 dark:bg-gray-700 z-10">
-                    <button class="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-600 p-1 rounded w-full text-left" on:click={() => handleSort('pos')}>
-                      <span>POS</span>
-                      <span class="text-xs">{#if $sortConfig.column === 'pos'}{#if $sortConfig.direction === 'asc'}↑{:else if $sortConfig.direction === 'desc'}↓{:else}↕{/if}{:else}↕{/if}</span>
-                    </button>
-                  </th>
-                  {#each $metricColumns as column}
-                    <th class="px-4 py-3 text-left font-medium">
-                      <button class="flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-600 p-1 rounded w-full text-left" on:click={() => handleSort(column)} title={column}>
-                        <span class="truncate max-w-[120px]">{column}</span>
-                        <span class="text-xs">{#if $sortConfig.column === column}{#if $sortConfig.direction === 'asc'}↑{:else if $sortConfig.direction === 'desc'}↓{:else}↕{/if}{:else}↕{/if}</span>
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <div class="p-6 border-b border-gray-700/50">
+            <h3 class="text-xl font-bold text-white">Word Analysis Data</h3>
+            <p class="text-gray-400 text-sm mt-1">
+              Showing {($currentPage - 1) * itemsPerPage + 1} - {Math.min($currentPage * itemsPerPage, $filteredResult.length)} of {$filteredResult.length} results
+            </p>
+          </div>
+          
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full">
+              <thead class="bg-gray-800/50">
+                <tr>
+                  {#each [
+                    { key: 'word', label: 'Word' },
+                    { key: 'pos', label: 'POS' },
+                    ...$metricColumns.map(col => ({ key: col, label: col.replace(/\./g, ' ').replace(/([A-Z])/g, ' $1').trim() }))
+                  ] as column}
+                    <th class="text-left p-4 text-gray-300 font-semibold">
+                      <button
+                        on:click={() => handleSort(column.key)}
+                        class="flex items-center gap-2 hover:text-white transition-colors group w-full text-left"
+                      >
+                        <span class="truncate">{column.label}</span>
+                        <div class="flex flex-col">
+                          {#if $sortConfig.column === column.key}
+                            {#if $sortConfig.direction === 'asc'}
+                              <ChevronUp class="h-3 w-3 text-blue-400" />
+                            {:else if $sortConfig.direction === 'desc'}
+                              <ChevronDown class="h-3 w-3 text-blue-400" />
+                            {:else}
+                              <ChevronsUpDown class="h-3 w-3 group-hover:text-blue-400" />
+                            {/if}
+                          {:else}
+                            <ChevronsUpDown class="h-3 w-3 group-hover:text-blue-400" />
+                          {/if}
+                        </div>
                       </button>
                     </th>
                   {/each}
                 </tr>
               </thead>
               <tbody>
-                {#each $finalPaginatedResult as item}
-                  <tr class="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td class="px-4 py-3 font-medium sticky left-0 bg-white dark:bg-gray-800 z-10">{item.word}</td>
-                    <td class="px-4 py-3 text-gray-600 dark:text-gray-400 sticky left-16 bg-white dark:bg-gray-800 z-10">{item.pos}</td>
-                    {#each $metricColumns as column}
-                      <td class="px-4 py-3" title="{column}: {item.metrics[column] ?? '-'}">
-                        {#if item.metrics[column] !== undefined}
-                          {#if typeof item.metrics[column] === 'number'}
-                            <span class="font-mono text-xs">{item.metrics[column].toFixed(4)}</span>
-                          {:else}
-                            {item.metrics[column]}
-                          {/if}
+                {#each $finalPaginatedResult as item, index}
+                  <tr class="table-row border-b border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-500/5 hover:to-purple-500/5">
+                    <td class="p-4 text-white font-medium">{item.word}</td>
+                    <td class="p-4">
+                      <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-300 rounded-full">
+                        {item.pos}
+                      </span>
+                    </td>
+                    {#each $metricColumns as col}
+                      <td class="p-4 text-gray-300">
+                        {#if typeof item.metrics[col] === 'number'}
+                          <span class="font-mono">
+                            {item.metrics[col].toFixed(4)}
+                          </span>
                         {:else}
-                          <span class="text-gray-400 dark:text-gray-500">-</span>
+                          <span class="text-gray-500">
+                            {item.metrics[col] ?? 'N/A'}
+                          </span>
                         {/if}
                       </td>
                     {/each}
@@ -800,17 +1057,81 @@
               </tbody>
             </table>
           </div>
+          
+          <!-- Pagination -->
+          {#if totalPages > 1}
+            <div class="p-6 border-t border-gray-700/50">
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-400">
+                  Page {$currentPage} of {totalPages}
+                </div>
+                
+                <div class="flex items-center gap-2">
+                  <Button
+                    on:click={() => goToPage(Math.max(1, $currentPage - 1))}
+                    disabled={$currentPage === 1}
+                    class="glass-button text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                  >
+                    <ChevronUp class="h-4 w-4 rotate-[-90deg]" />
+                  </Button>
+                  
+                  {#each Array(Math.min(5, totalPages)).fill(0).map((_, i) => {
+                    const start = Math.max(1, $currentPage - 2);
+                    return start + i;
+                  }).filter(page => page <= totalPages) as page}
+                    <Button
+                      on:click={() => goToPage(page)}
+                      class={cn(
+                        "px-3 py-2 rounded-lg font-medium transition-all",
+                        page === $currentPage 
+                          ? "bg-blue-500 text-white shadow-lg" 
+                          : "glass-button text-gray-300 hover:text-white"
+                      )}
+                    >
+                      {page}
+                    </Button>
+                  {/each}
+                  
+                  <Button
+                    on:click={() => goToPage(Math.min(totalPages, $currentPage + 1))}
+                    disabled={$currentPage === totalPages}
+                    class="glass-button text-white px-3 py-2 rounded-lg disabled:opacity-50"
+                  >
+                    <ChevronUp class="h-4 w-4 rotate-90" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          {/if}
         </div>
-
-        <!-- Pagination -->
-        {#if totalPages > 1}
-          <div class="flex items-center justify-center gap-4 mt-4">
-            <Button variant="outline" size="sm" on:click={() => goToPage($currentPage - 1)} disabled={$currentPage === 1} class="hover-lift active-scale">Previous</Button>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Page {$currentPage} of {totalPages}</span>
-            <Button variant="outline" size="sm" on:click={() => goToPage($currentPage + 1)} disabled={$currentPage === totalPages} class="hover-lift active-scale">Next</Button>
-          </div>
-        {/if}
       </div>
-    </Card>
-  {/if}
+    {/if}
+
+    <!-- Footer -->
+    <div class="text-center py-12 animate-slide-up">
+      <div class="glass-card rounded-2xl p-8 max-w-2xl mx-auto">
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <Brain class="h-6 w-6 text-blue-400" />
+          <h3 class="text-xl font-bold text-white">Advanced Linguistic Analysis</h3>
+        </div>
+        <p class="text-gray-400 leading-relaxed">
+          Powered by state-of-the-art machine learning models for Chinese word segmentation, 
+          part-of-speech tagging, and comprehensive statistical analysis. 
+          Built with Tauri, Svelte, and Rust for optimal performance.
+        </p>
+        <div class="mt-6 flex justify-center gap-6 text-sm">
+          {#each [
+            { label: 'Fast Processing', icon: Zap },
+            { label: 'Accurate Results', icon: CheckCircle },
+            { label: 'Export Ready', icon: Download }
+          ] as feature}
+            <div class="flex items-center gap-2 text-gray-400">
+              <svelte:component this={feature.icon} class="h-4 w-4 text-blue-400" />
+              <span>{feature.label}</span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
