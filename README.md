@@ -14,16 +14,16 @@ BetaWordList enables you to:
 ## ✨ Features
 
 - **One-Click Model Loading**  
-  No need to configure model paths—just click "Load Model" and go!
+  Just click "Load Model" and go!
 - **Batch File Analysis**  
   Select and analyze multiple `.txt` files at once.
 - **Real-Time Progress**  
   See which file is being processed and overall progress.
 - **Interactive Results Table**  
-  - Column sorting: Click any column header to sort (ascending/descending/none)
+  - ~~Column sorting: Click any column header to sort (ascending/descending/none)~~ (buggy in the current version)
   - Fixed columns: "Word" and "POS" always visible
   - Responsive layout: Prevents column overlap
-  - Hover tooltips: See full metric names and values
+  - ~~Hover tooltips: See full metric names and values~~ (buggy in the current version)
 - **Advanced Filtering**  
   - By word length (e.g., only 2-character words)
   - By POS tag
@@ -33,16 +33,13 @@ BetaWordList enables you to:
   - Smart file naming: `wordlist_results_{timestamp}.csv`
 - **User Experience**  
   - Data statistics: original, filtered, and current page counts
-  - Clear sorting/filtering state indicators
-  - One-click reset for all filters
   - Fully responsive for desktop and laptop screens
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** Svelte, TailwindCSS, Lucide Icons
+- **Frontend:** Svelte, TailwindCSS, Lucide Icons, shadcn-svelte
 - **Backend:** Rust, Tauri
 - **NLP:** LTP (Language Technology Platform), custom Rust NLP modules
-- **File System:** Secure, permission-based access via Tauri plugins
 
 ## 📦 Getting Started
 
@@ -90,6 +87,7 @@ This project makes use of the following open source projects:
 - [Svelte](https://svelte.dev/)
 - [TailwindCSS](https://tailwindcss.com/)
 - [Lucide Icons](https://lucide.dev/)
+- [shadcn-svelte](https://shadcn-svelte.com/)
 - [LTP](https://github.com/HIT-SCIR/ltp)
 - [corpus-dispersion](https://github.com/Chaunice/corpus_dispersion)
 
