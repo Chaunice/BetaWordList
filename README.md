@@ -63,7 +63,7 @@ BetaWordList enables you to:
 
 ## 📋 TODO
 
-- [ ] Add English UI/localization support
+- [ ] i18n support
 - [ ] Support for more NLP models and languages
 - [ ] Customizable metric columns and export formats
 - [ ] In-app help/documentation
