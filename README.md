@@ -20,10 +20,10 @@ BetaWordList enables you to:
 - **Real-Time Progress**  
   See which file is being processed and overall progress.
 - **Interactive Results Table**  
-  - ~~Column sorting: Click any column header to sort (ascending/descending/none)~~ (buggy in the current version)
+  - Column sorting: Click any column header to sort (ascending/descending/none)
   - Fixed columns: "Word" and "POS" always visible
   - Responsive layout: Prevents column overlap
-  - ~~Hover tooltips: See full metric names and values~~ (buggy in the current version)
+  - Hover tooltips: See full metric names and values
 - **Advanced Filtering**  
   - By word length (e.g., only 2-character words)
   - By POS tag
