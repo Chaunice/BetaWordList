@@ -3,7 +3,7 @@
   import { listen } from "@tauri-apps/api/event";
   import { writable, derived } from "svelte/store";
   // import { cn } from "$lib/utils.js";
-  import * as Button from "$lib/components/ui/button";
+  // import * as Button from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   // import Input from "$lib/components/ui/input/input.svelte";
   import * as Alert from "$lib/components/ui/alert";
@@ -124,16 +124,32 @@
     if ($sortConfig.column === '' || $sortConfig.direction === 'none') return $processedResult;
     const sorted = [...$processedResult].sort((a, b) => {
       let aVal, bVal;
-      if ($sortConfig.column === 'word') { aVal = a.word; bVal = b.word; }
-      else if ($sortConfig.column === 'pos') { aVal = a.pos; bVal = b.pos; }
-      else {
-        aVal = a.metrics[$sortConfig.column]; bVal = b.metrics[$sortConfig.column];
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-          return $sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
-        }
+      
+      // Get the values to compare
+      if ($sortConfig.column === 'word') { 
+        aVal = a.word; 
+        bVal = b.word; 
+      } else if ($sortConfig.column === 'pos') { 
+        aVal = a.pos; 
+        bVal = b.pos; 
+      } else {
+        aVal = a.metrics[$sortConfig.column]; 
+        bVal = b.metrics[$sortConfig.column];
       }
-      aVal = aVal ?? ''; bVal = bVal ?? '';
-      const comparison = String(aVal).localeCompare(String(bVal));
+      
+      // Handle null/undefined values
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      
+      // Handle numeric comparison
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        const comparison = aVal - bVal;
+        return $sortConfig.direction === 'asc' ? comparison : -comparison;
+      }
+      
+      // Handle string comparison
+      const comparison = String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
       return $sortConfig.direction === 'asc' ? comparison : -comparison;
     });
     return sorted;
@@ -336,14 +352,13 @@
       action: analyze,
       disabled: $analyzing || $filePaths.length === 0 || !$modelLoaded,
       status: () => $analyzing ? 'Analyzing...' : '',
-      statusClass: 'text-blue-600 dark:text-blue-400 flex items-center',
+      statusClass: () => $analyzing ? 'text-blue-600 dark:text-blue-400 animate-pulse' : '',
     }
   ];
 </script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-  /* toast 动画 */
+  /* toast animations */
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -434,34 +449,40 @@
         <Table.Root class="mt-0">
           <Table.Header>
             <Table.Row class="border-b bg-muted/50">
-              <!-- @ts-expect-error Svelte slot event type limitation -->
-              <Table.Head class="cursor-pointer hover:bg-muted w-[200px] font-semibold" on:click={() => handleSort('word')}>
+              <th 
+                class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] cursor-pointer hover:bg-muted/80 transition-colors select-none border-b"
+                on:click={() => handleSort('word')}
+              >
                 <div class="flex items-center">
                   <span>Word</span>
                   {#if $sortConfig.column === 'word'}
                     <span class="ml-1 text-primary">{$sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                   {/if}
                 </div>
-              </Table.Head>
-              <!-- @ts-expect-error Svelte slot event type limitation -->
-              <Table.Head class="cursor-pointer hover:bg-muted w-[100px] font-semibold" on:click={() => handleSort('pos')}>
+              </th>
+              <th 
+                class="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px] cursor-pointer hover:bg-muted/80 transition-colors select-none border-b"
+                on:click={() => handleSort('pos')}
+              >
                 <div class="flex items-center">
                   <span>POS</span>
                   {#if $sortConfig.column === 'pos'}
                     <span class="ml-1 text-primary">{$sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                   {/if}
                 </div>
-              </Table.Head>
+              </th>
               {#each $metricColumns as col}
-                <!-- @ts-expect-error Svelte slot event type limitation -->
-                <Table.Head class="cursor-pointer hover:bg-muted text-right w-[120px] font-semibold" on:click={() => handleSort(col)}>
+                <th 
+                  class="h-12 px-4 text-right align-middle font-medium text-muted-foreground w-[120px] cursor-pointer hover:bg-muted/80 transition-colors select-none border-b"
+                  on:click={() => handleSort(col)}
+                >
                   <div class="flex items-center justify-end">
                     <span class="truncate mr-1" title={col}>{col}</span>
                     {#if $sortConfig.column === col}
                       <span class="text-primary">{$sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                     {/if}
                   </div>
-                </Table.Head>
+                </th>
               {/each}
             </Table.Row>
           </Table.Header>

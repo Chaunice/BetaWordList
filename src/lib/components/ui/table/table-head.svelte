@@ -6,8 +6,9 @@
 		ref = $bindable(null),
 		class: className,
 		children,
+		clickable = false,
 		...restProps
-	}: WithElementRef<HTMLThAttributes> = $props();
+	}: WithElementRef<HTMLThAttributes> & { clickable?: boolean } = $props();
 </script>
 
 <th
@@ -15,6 +16,7 @@
 	data-slot="table-head"
 	class={cn(
 		"text-foreground h-10 whitespace-nowrap px-2 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0",
+		clickable && "cursor-pointer hover:bg-muted/50 transition-colors select-none",
 		className
 	)}
 	{...restProps}
