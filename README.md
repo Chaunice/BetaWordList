@@ -63,11 +63,8 @@ BetaWordList enables you to:
 
 ## 📋 TODO
 
-- [ ] i18n support
-- [ ] Support for more NLP models and languages
 - [ ] Customizable metric columns and export formats
 - [ ] In-app help/documentation
-- [ ] Improved accessibility (a11y) and keyboard navigation
 - [ ] Performance optimization for extremely large corpora
 - [x] Dark mode toggle
 
