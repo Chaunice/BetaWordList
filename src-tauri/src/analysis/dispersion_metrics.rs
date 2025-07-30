@@ -25,23 +25,23 @@ pub struct DispersionMetrics {
 
 impl std::fmt::Display for DispersionMetrics {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "DispersionMetrics {{\n")?;
-        write!(f, "  range: {},\n", self.range)?;
-        write!(f, "  sd_population: {:?},\n", self.sd_population)?;
-        write!(f, "  vc_population: {:?},\n", self.vc_population)?;
-        write!(f, "  juilland_d: {:?},\n", self.juilland_d)?;
-        write!(f, "  carroll_d2: {:?},\n", self.carroll_d2)?;
-        write!(f, "  roschengren_s_adj: {:?},\n", self.roschengren_s_adj)?;
-        write!(f, "  dp: {:?},\n", self.dp)?;
-        write!(f, "  dp_norm: {:?},\n", self.dp_norm)?;
-        write!(f, "  kl_divergence: {:?},\n", self.kl_divergence)?;
-        write!(f, "  jsd_dispersion: {:?},\n", self.jsd_dispersion)?;
-        write!(f, "  hellinger_dispersion: {:?},\n", self.hellinger_dispersion)?;
-        write!(f, "  mean_text_frequency_ft: {:?},\n", self.mean_text_frequency_ft)?;
-        write!(f, "  pervasiveness_pt: {:?},\n", self.pervasiveness_pt)?;
-        write!(f, "  evenness_da: {:?},\n", self.evenness_da)?;
-        write!(f, "  ft_adjusted_by_pt: {:?},\n", self.ft_adjusted_by_pt)?;
-        write!(f, "  ft_adjusted_by_da: {:?}\n", self.ft_adjusted_by_da)?;
+        writeln!(f, "DispersionMetrics {{")?;
+        writeln!(f, "  range: {},", self.range)?;
+        writeln!(f, "  sd_population: {:?},", self.sd_population)?;
+        writeln!(f, "  vc_population: {:?},", self.vc_population)?;
+        writeln!(f, "  juilland_d: {:?},", self.juilland_d)?;
+        writeln!(f, "  carroll_d2: {:?},", self.carroll_d2)?;
+        writeln!(f, "  roschengren_s_adj: {:?},", self.roschengren_s_adj)?;
+        writeln!(f, "  dp: {:?},", self.dp)?;
+        writeln!(f, "  dp_norm: {:?},", self.dp_norm)?;
+        writeln!(f, "  kl_divergence: {:?},", self.kl_divergence)?;
+        writeln!(f, "  jsd_dispersion: {:?},", self.jsd_dispersion)?;
+        writeln!(f, "  hellinger_dispersion: {:?},", self.hellinger_dispersion)?;
+        writeln!(f, "  mean_text_frequency_ft: {:?},", self.mean_text_frequency_ft)?;
+        writeln!(f, "  pervasiveness_pt: {:?},", self.pervasiveness_pt)?;
+        writeln!(f, "  evenness_da: {:?},", self.evenness_da)?;
+        writeln!(f, "  ft_adjusted_by_pt: {:?},", self.ft_adjusted_by_pt)?;
+        writeln!(f, "  ft_adjusted_by_da: {:?}", self.ft_adjusted_by_da)?;
         write!(f, "}}")
     }
 }

@@ -2,7 +2,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod analysis;
-use tauri_plugin_dialog;
 use std::env::current_exe;
 use std::path::PathBuf;
 
@@ -26,7 +25,7 @@ async fn start_analysis(
     let nlp = nlp_guard.as_ref().ok_or("NLP模型未加载")?;
 
     Ok(corpus_pipeline::analyze_corpus(
-        &nlp,
+        nlp,
         &file_paths,
         Some(&app_handle),
     ))
@@ -43,7 +42,7 @@ async fn load_models(
     let cws = get_model_path(&cws_path).to_string_lossy().to_string();
     let pos = get_model_path(&pos_path).to_string_lossy().to_string();
     let nlp = LtpNlp::load(&cws, &pos)
-        .map_err(|e| format!("模型加载失败: {}", e))?;
+        .map_err(|e| format!("模型加载失败: {e}"))?;
     *state.nlp.lock().unwrap() = Some(nlp);
     Ok(())
 }
@@ -71,7 +70,7 @@ fn get_model_path(filename: &str) -> PathBuf {
     if dev.exists() {
         return dev;
     }
-    println!("  fallback: {}", filename);
+    println!("  fallback: {filename}");
     // fallback: just filename
     PathBuf::from(filename)
 }

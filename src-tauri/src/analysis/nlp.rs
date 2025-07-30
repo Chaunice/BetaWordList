@@ -25,7 +25,7 @@ impl LtpNlp {
         let words = self.cws.predict(text).unwrap_or_default();
         let pos = self.pos.predict(&words).unwrap_or_default();
         words.into_iter()
-            .zip(pos.into_iter())
+            .zip(pos)
             .map(|(w, p)| (w.to_string(), p.to_string()))
             .collect()
     }
