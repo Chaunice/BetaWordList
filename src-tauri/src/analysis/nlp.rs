@@ -1,8 +1,8 @@
 // nlp.rs
 // 中文分词、词性标注、命名实体识别模块，基于 ltp-rs
 
+use ltp::{CWSModel, Codec, Format, ModelSerde, POSModel};
 use std::fs::File;
-use ltp::{CWSModel, POSModel, ModelSerde, Format, Codec};
 
 /// NLP模型结构体，包含分词、词性、实体模型
 pub struct LtpNlp {
@@ -24,7 +24,8 @@ impl LtpNlp {
     pub fn segment_pos(&self, text: &str) -> Vec<(String, String)> {
         let words = self.cws.predict(text).unwrap_or_default();
         let pos = self.pos.predict(&words).unwrap_or_default();
-        words.into_iter()
+        words
+            .into_iter()
             .zip(pos)
             .map(|(w, p)| (w.to_string(), p.to_string()))
             .collect()

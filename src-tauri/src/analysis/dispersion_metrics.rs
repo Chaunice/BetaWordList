@@ -1,7 +1,7 @@
 // dispersion_metrics.rs
 // 分布指标数据结构，移植自 dispersion_metrics_models.py
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DispersionMetrics {
@@ -36,8 +36,16 @@ impl std::fmt::Display for DispersionMetrics {
         writeln!(f, "  dp_norm: {:?},", self.dp_norm)?;
         writeln!(f, "  kl_divergence: {:?},", self.kl_divergence)?;
         writeln!(f, "  jsd_dispersion: {:?},", self.jsd_dispersion)?;
-        writeln!(f, "  hellinger_dispersion: {:?},", self.hellinger_dispersion)?;
-        writeln!(f, "  mean_text_frequency_ft: {:?},", self.mean_text_frequency_ft)?;
+        writeln!(
+            f,
+            "  hellinger_dispersion: {:?},",
+            self.hellinger_dispersion
+        )?;
+        writeln!(
+            f,
+            "  mean_text_frequency_ft: {:?},",
+            self.mean_text_frequency_ft
+        )?;
         writeln!(f, "  pervasiveness_pt: {:?},", self.pervasiveness_pt)?;
         writeln!(f, "  evenness_da: {:?},", self.evenness_da)?;
         writeln!(f, "  ft_adjusted_by_pt: {:?},", self.ft_adjusted_by_pt)?;

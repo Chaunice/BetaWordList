@@ -3,7 +3,9 @@
 
 use std::fs;
 
-use crate::analysis::{nlp::LtpNlp, word_analyzer::CorpusWordAnalyzer, dispersion_metrics::DispersionMetrics};
+use crate::analysis::{
+    dispersion_metrics::DispersionMetrics, nlp::LtpNlp, word_analyzer::CorpusWordAnalyzer,
+};
 use tauri::Emitter;
 
 /// 进度事件结构体
@@ -15,10 +17,7 @@ pub struct ProgressEvent {
 }
 
 /// 处理单个文本文件，返回 (词, 词性) 二元组
-fn process_file(
-    nlp: &LtpNlp,
-    file_path: &str,
-) -> Vec<(String, String)> {
+fn process_file(nlp: &LtpNlp, file_path: &str) -> Vec<(String, String)> {
     let content = fs::read_to_string(file_path).unwrap_or_default();
     nlp.segment_pos(&content)
 }
@@ -48,12 +47,14 @@ pub fn analyze_corpus(
         for (w, p) in word_pos {
             *local_counter.entry((w, p)).or_insert(0.0) += 1.0;
         }
-        
+
         // 统计当前文件词频并更新全局词频表
         let idx = part_sizes.len();
         let mut file_sum = 0.0;
         for (k, v) in local_counter.iter() {
-            vocab_map.entry(k.clone()).or_insert_with(|| vec![0.0; file_paths.len()])[idx] = *v;
+            vocab_map
+                .entry(k.clone())
+                .or_insert_with(|| vec![0.0; file_paths.len()])[idx] = *v;
             file_sum += v;
         }
         part_sizes.push(file_sum);
@@ -65,7 +66,8 @@ pub fn analyze_corpus(
     vocab_map
         .into_iter()
         .map(|((w, p), freq_vec)| {
-            let analyzer = CorpusWordAnalyzer::new(freq_vec.clone(), part_sizes.clone(), total_words);
+            let analyzer =
+                CorpusWordAnalyzer::new(freq_vec.clone(), part_sizes.clone(), total_words);
             let metrics = analyzer.calculate_all_metrics();
             (w, p, metrics)
         })
