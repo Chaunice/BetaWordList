@@ -150,14 +150,20 @@ impl CorpusWordAnalyzer {
         if self.f == 0.0 {
             return Some(0.0);
         }
-        let mut kl = 0.0;
-        for (&v_i, &s_i) in self.v.iter().zip(self.s.iter()) {
-            let p = if self.f > 0.0 { v_i / self.f } else { 0.0 };
-            let q = s_i;
-            if p > 0.0 && q > 0.0 {
-                kl += p * (p / q).ln() / LN_2;
-            }
-        }
+        let kl = self
+            .v
+            .iter()
+            .zip(self.s.iter())
+            .map(|(&v_i, &s_i)| {
+                let p = if self.f > 0.0 { v_i / self.f } else { 0.0 };
+                let q = s_i;
+                if p > 0.0 && q > 0.0 {
+                    p * (p / q).ln() / LN_2
+                } else {
+                    0.0
+                }
+            })
+            .sum::<f64>();
         Some(kl)
     }
 
@@ -173,19 +179,18 @@ impl CorpusWordAnalyzer {
             .zip(q_dist.iter())
             .map(|(&p, &q)| 0.5 * (p + q))
             .collect();
-        let mut kl_pm: f64 = 0.0;
-        let mut kl_qm: f64 = 0.0;
-        for i in 0..self.n {
-            let p = p_dist[i];
-            let q = q_dist[i];
-            let m = m_dist[i];
-            if p > 1e-12 && m > 1e-12 {
-                kl_pm += p * (p / m).ln();
-            }
-            if q > 1e-12 && m > 1e-12 {
-                kl_qm += q * (q / m).ln();
-            }
-        }
+
+        let (kl_pm, kl_qm) = p_dist
+            .iter()
+            .zip(q_dist.iter())
+            .zip(m_dist.iter())
+            .map(|((&p, &q), &m)| {
+                let kl_p = if p > 1e-12 && m > 1e-12 { p * (p / m).ln() } else { 0.0 };
+                let kl_q = if q > 1e-12 && m > 1e-12 { q * (q / m).ln() } else { 0.0 };
+                (kl_p, kl_q)
+            })
+            .fold((0.0, 0.0), |(acc_p, acc_q), (kl_p, kl_q)| (acc_p + kl_p, acc_q + kl_q));
+
         let jsd = 0.5 * (kl_pm + kl_qm);
         Some(1.0 - (jsd / LN_2).min(1.0))
     }
@@ -197,11 +202,14 @@ impl CorpusWordAnalyzer {
         }
         let p_dist: Vec<f64> = self.v.iter().map(|&v_i| v_i / self.f).collect();
         let q_dist: &Vec<f64> = &self.s;
-        let mut bc: f64 = 0.0;
-        for i in 0..self.n {
-            bc += (p_dist[i] * q_dist[i]).sqrt();
-        }
-        let bc = bc.clamp(0.0, 1.0);
+
+        let bc = p_dist
+            .iter()
+            .zip(q_dist.iter())
+            .map(|(&p, &q)| (p * q).sqrt())
+            .sum::<f64>()
+            .clamp(0.0, 1.0);
+
         let hellinger_distance = (1.0 - bc).sqrt();
         Some(1.0 - hellinger_distance)
     }
@@ -222,12 +230,11 @@ impl CorpusWordAnalyzer {
             let all_same = self.p.iter().all(|&p| (p - mean_p).abs() < 1e-12);
             return Some(if all_same { 1.0 } else { 0.0 });
         }
-        let mut sum_abs_diff = 0.0;
-        for i in 0..self.n {
-            for j in (i + 1)..self.n {
-                sum_abs_diff += (self.p[i] - self.p[j]).abs();
-            }
-        }
+
+        let sum_abs_diff = (0..self.n)
+            .flat_map(|i| ((i + 1)..self.n).map(move |j| (self.p[i] - self.p[j]).abs()))
+            .sum::<f64>();
+
         let num_pairs = (self.n * (self.n - 1)) / 2;
         if num_pairs == 0 {
             return Some(1.0);
